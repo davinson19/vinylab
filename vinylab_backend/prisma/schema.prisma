@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- USUARIOS ---
+model Rol {
+  id     Int    @id @default(autoincrement())
+  nombre String @unique // Admin o Cliente
+
+  // Un rol puede ser asignado a muchos usuarios
+  usuarios Usuario[]
+}
+
+model Usuario {
+  id         Int     @id @default(autoincrement())
+  rolId      Int
+  email      String  @unique
+  nombre     String  @unique
+  contrasena String
+  direccion  String?
+  verificado Boolean @default(false)
+
+  // Un usuario pertenece a un rol
+  rol     Rol      @relation(fields: [rolId], references: [id])
+  // Un usuario puede hacer muchos pedidos
+  pedidos Pedido[]
+}
+
+// --- CATÁLOGO ---
+model Categoria {
+  id     Int    @id @default(autoincrement())
+  nombre String @unique
+
+  // Una categoría tiene muchos vinilos
+  vinilos Vinilo[]
+}
+
+model Artista {
+  id     Int    @id @default(autoincrement())
+  nombre String @unique
+
+  // Un artista puede tener muchos vinilos
+  vinilos Vinilo[]
+}
+
+model Vinilo {
+  id              Int     @id @default(autoincrement())
+  categoriaId     Int
+  artistaId       Int
+  titulo          String
+  descripcion     String? @db.Text
+  precio          Decimal @db.Decimal(10, 2)
+  anioLanzamiento Int
+  stock           Int     @default(0)
+  portada         String? // URL de la portada
+
+  // Un vinilo pertenece a una categoría
+  categoria   Categoria    @relation(fields: [categoriaId], references: [id])
+  // Un vinilo es de un artista
+  artista     Artista      @relation(fields: [artistaId], references: [id])
+  // Un vinilo puede aparecer en múltiples pedidos
+  pedidos DetallePedido[]
+}
+
+// --- TRANSACCIONES ---
+model Pedido {
+  id            Int      @id @default(autoincrement())
+  usuarioId     Int
+  importeTotal  Decimal  @db.Decimal(10, 2)
+  estado        String   @default("PAGADO") // Pagado, Enviado o Entregado
+  fechaCreacion DateTime @default(now())
+
+  // Un pedido pertenece a un usuario
+  usuario Usuario         @relation(fields: [usuarioId], references: [id])
+  // Un pedido puede tener muchos vinilos
+  vinilos DetallePedido[]
+}
+
+model DetallePedido {
+  id       Int @id @default(autoincrement())
+  pedidoId Int
+  viniloId Int
+  cantidad Int @default(1)
+
+  // Un detalle de pedido pertenece a un pedido
+  pedido Pedido @relation(fields: [pedidoId], references: [id])
+  // Un detalle de pedido tiene asociado un vinilo
+  vinilo Vinilo @relation(fields: [viniloId], references: [id])
+}
