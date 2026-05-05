@@ -54,3 +54,9 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Backend (NestJS + Prisma)
+vinylab_backend/dist/
+vinylab_backend/generated/
+vinylab_backend/node_modules/
+vinylab_backend/.env

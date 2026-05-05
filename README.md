@@ -18,12 +18,4 @@ Diagrama de la base de datos diseñado con **Mermaid**.
 
 ### Backend 
 
-El backend está hecho con **NestJS**, **Prisma ORM**, **PostgreSQL** y **pgAdmin** para poder consultar la base de datos. Para acceder a pgAdmin, se debe acceder a localhost:5050 que estará corriendo en un contenedor docker.
-
-Para generar la estructura básica (módulo, servicio y controlador) de cada modelo se han utilizado los siguientes comandos:
-
-```bash
-npx nest g module <modelo>
-npx nest g service <modelo>
-npx nest g controller <modelo>
-```
+El backend está desarrollado con **NestJS** como framework, **Prisma ORM** como ORM y una base de datos **PostgreSQL**. Se podrá consultar la base de datos utilizando prisma studio con el comando `npx prisma studio`.
