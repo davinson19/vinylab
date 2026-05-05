@@ -4,6 +4,6 @@ import { DetallePedidoController } from './detalle-pedido.controller';
 
 @Module({
   providers: [DetallePedidoService],
-  controllers: [DetallePedidoController]
+  controllers: [DetallePedidoController],
 })
 export class DetallePedidoModule {}

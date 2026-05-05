@@ -10,7 +10,15 @@ import { PedidoModule } from './pedido/pedido.module';
 import { DetallePedidoModule } from './detalle-pedido/detalle-pedido.module';
 
 @Module({
-  imports: [RolModule, UsuarioModule, CategoriaModule, ArtistaModule, ViniloModule, PedidoModule, DetallePedidoModule],
+  imports: [
+    RolModule,
+    UsuarioModule,
+    CategoriaModule,
+    ArtistaModule,
+    ViniloModule,
+    PedidoModule,
+    DetallePedidoModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

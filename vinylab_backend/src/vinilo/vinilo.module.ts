@@ -4,6 +4,6 @@ import { ViniloController } from './vinilo.controller';
 
 @Module({
   providers: [ViniloService],
-  controllers: [ViniloController]
+  controllers: [ViniloController],
 })
 export class ViniloModule {}

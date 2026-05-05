@@ -4,6 +4,6 @@ import { ArtistaController } from './artista.controller';
 
 @Module({
   providers: [ArtistaService],
-  controllers: [ArtistaController]
+  controllers: [ArtistaController],
 })
 export class ArtistaModule {}
