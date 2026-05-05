@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { PrismaModule } from './prisma/prisma.module';
 import { RolModule } from './rol/rol.module';
 import { UsuarioModule } from './usuario/usuario.module';
 import { CategoriaModule } from './categoria/categoria.module';
@@ -11,6 +12,7 @@ import { DetallePedidoModule } from './detalle-pedido/detalle-pedido.module';
 
 @Module({
   imports: [
+    PrismaModule,
     RolModule,
     UsuarioModule,
     CategoriaModule,
