@@ -14,7 +14,14 @@ export class PedidoService {
   }
 
   findAll() {
-    return this.prisma.pedido.findMany();
+    return this.prisma.pedido.findMany({ include: { vinilos: true } });
+  }
+
+  findByUsuario(usuarioId: number) {
+    return this.prisma.pedido.findMany({
+      where: { usuarioId },
+      include: { vinilos: true },
+    });
   }
 
   findOne(id: number) {

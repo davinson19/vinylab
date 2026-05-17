@@ -1,8 +1,10 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { DetallePedidoService } from './detalle-pedido.service';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateDetallePedidoDto } from './dto/create-detalle-pedido.dto';
 import { UpdateDetallePedidoDto } from './dto/update-detalle-pedido.dto';
 
+@Roles('Admin')
 @Controller('detalle-pedido')
 export class DetallePedidoController {
   constructor(private readonly detallePedidoService: DetallePedidoService) {}

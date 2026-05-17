@@ -29,6 +29,27 @@ Endpoints:
   - Actualizar: `PATCH /[entidad]/:id`
   - Eliminar: `DELETE /[entidad]/:id`
 
+#### Autenticación y JWT
+
+Endpoints de autenticación:
+  - Registro de usuario: `POST /auth/register` (Espera el mismo body que la creación de Usuario).
+  - Iniciar sesión: `POST /auth/login` (Espera `email` y `contrasena`).
+
+**Cómo usar el token (JWT)**
+Al iniciar sesión correctamente mediante `POST /auth/login`, el servidor devolverá una respuesta JSON con el token de acceso:
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+Para hacer peticiones a endpoints que estén protegidos, se debe incluir este token en la cabecera (header) de la petición HTTP usando el esquema Bearer:
+
+```http
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
 #### Reiniciar Base de Datos
 
 Vaciar la base de datos y reiniciar los IDs:
