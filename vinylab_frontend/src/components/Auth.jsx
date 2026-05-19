@@ -1,12 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const Auth = () => {
+const Auth = ({ toggleTheme, isDarkMode }) => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  useEffect(() => {
+    document.body.classList.add('auth-page');
+    return () => {
+      document.body.classList.remove('auth-page');
+    };
+  }, []);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -37,12 +44,12 @@ const Auth = () => {
       const payload = isLogin
         ? { email: formData.email, contrasena: formData.contrasena }
         : {
-            email: formData.email,
-            contrasena: formData.contrasena,
-            nombre: formData.nombre,
-            direccion: formData.direccion,
-            rolId: formData.rolId,
-          };
+          email: formData.email,
+          contrasena: formData.contrasena,
+          nombre: formData.nombre,
+          direccion: formData.direccion,
+          rolId: formData.rolId,
+        };
 
       const response = await fetch(url, {
         method: 'POST',
@@ -61,7 +68,7 @@ const Auth = () => {
       if (isLogin) {
         setSuccess('¡Inicio de sesión exitoso!');
         localStorage.setItem('token', data.access_token);
-        
+
         try {
           const payload = JSON.parse(atob(data.access_token.split('.')[1]));
           if (payload.rolName === 'Admin') {
@@ -93,14 +100,54 @@ const Auth = () => {
   };
 
   return (
-    <div className="auth-container fade-in">
-      <div className="glass-panel">
-        <div className="auth-header">
-          <h1 className="auth-title">VinyLab</h1>
-          <p className="auth-subtitle">
-            {!isLogin ? 'Bienvenido de nuevo' : 'Crea tu cuenta hoy'}
-          </p>
-        </div>
+    <>
+      <button
+        type="button"
+        onClick={toggleTheme}
+        style={{
+          position: 'fixed',
+          top: '1.5rem',
+          right: '1.5rem',
+          background: 'var(--surface)',
+          border: '1px solid var(--surface-border)',
+          borderRadius: '50%',
+          width: '40px',
+          height: '40px',
+          color: 'var(--text)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 100,
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+        }}
+        title={isDarkMode ? 'Cambiar a Modo Día' : 'Cambiar a Modo Noche'}
+      >
+        {isDarkMode ? (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        ) : (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        )}
+      </button>
+      <div className="auth-container fade-in">
+        <div className="glass-panel">
+          <div className="auth-header">
+            <h1 className="auth-title">VinyLab</h1>
+          </div>
 
         {error && <div className="error-message fade-in">{error}</div>}
         {success && <div className="success-message fade-in">{success}</div>}
@@ -178,6 +225,7 @@ const Auth = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

@@ -26,12 +26,14 @@
 }
 
 .admin-sidebar-header h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #fff, #94a3b8);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-size: 1.75rem;
+  font-weight: normal;
+  font-family: 'ITC Magnifico';
+  color: var(--primary);
+}
+
+.light-mode .admin-sidebar-header h2 {
+  color: var(--primary);
 }
 
 .admin-sidebar-menu {
@@ -62,7 +64,7 @@
 }
 
 .admin-menu-btn.active {
-  background: rgba(139, 92, 246, 0.15);
+  background: rgba(204, 164, 4, 0.15);
   color: var(--primary);
   font-weight: 600;
 }
