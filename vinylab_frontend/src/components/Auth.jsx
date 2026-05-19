@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Auth = () => {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -58,8 +60,19 @@ const Auth = () => {
 
       if (isLogin) {
         setSuccess('¡Inicio de sesión exitoso!');
-        // Aquí podrías guardar el token: localStorage.setItem('token', data.access_token);
-        console.log('Login success:', data);
+        localStorage.setItem('token', data.access_token);
+        
+        try {
+          const payload = JSON.parse(atob(data.access_token.split('.')[1]));
+          if (payload.rolName === 'Admin') {
+            navigate('/admin');
+          } else {
+            // Navigate to catalog or home for client
+            navigate('/');
+          }
+        } catch (e) {
+          console.error("Error decoding token", e);
+        }
       } else {
         setSuccess('¡Registro completado exitosamente! Ahora puedes iniciar sesión.');
         setIsLogin(true); // Switch to login after successful registration
