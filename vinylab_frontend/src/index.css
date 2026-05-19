@@ -27,10 +27,13 @@
 }
 
 body.auth-page {
-  background-image: url('/fondo_inicio.jpg');
+  background-image: url('./assets/fondo_inicio.jpg');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 * {
@@ -47,9 +50,6 @@ body {
     radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.15) 0px, transparent 50%);
   color: var(--text);
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .auth-container {
