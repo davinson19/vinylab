@@ -27,6 +27,11 @@ lerna-debug.log*
 *.launch
 .settings/
 *.sublime-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
 # IDE - VSCode
 .vscode/*
@@ -60,3 +65,9 @@ vinylab_backend/dist/
 vinylab_backend/generated/
 vinylab_backend/node_modules/
 vinylab_backend/.env
+
+# Frontend (Vite)
+vinylab_frontend/dist/
+vinylab_frontend/dist-ssr/
+vinylab_frontend/node_modules/
+vinylab_frontend/*.local
