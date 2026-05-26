@@ -13,15 +13,10 @@ const AdminPanel = ({ toggleTheme, isDarkMode }) => {
 
   const tabs = [
     { id: 'usuarios', label: 'Usuarios' },
-    { id: 'roles', label: 'Roles' },
-    { id: 'categorias', label: 'Categorías' },
-    { id: 'artistas', label: 'Artistas' },
-    { id: 'vinilos', label: 'Vinilos' },
+    { id: 'catalogo', label: 'Catálogo' },
     { id: 'pedidos', label: 'Pedidos' },
-    { id: 'detalles-pedido', label: 'Detalles de Pedido' },
   ];
 
-  // Column definitions for different entities
   const getTableConfig = () => {
     switch (activeTab) {
       case 'usuarios':
@@ -32,73 +27,8 @@ const AdminPanel = ({ toggleTheme, isDarkMode }) => {
             { key: 'id', label: 'ID' },
             { key: 'nombre', label: 'Nombre' },
             { key: 'email', label: 'Email' },
-            { key: 'rolId', label: 'Rol ID', type: 'number' },
+            { key: 'rolId', label: 'Rol', type: 'select', selectEndpoint: 'rol', optionLabel: 'nombre', render: (row) => row.rol ? row.rol.nombre : row.rolId },
             { key: 'direccion', label: 'Dirección', required: false },
-            { key: 'verificado', label: 'Verificado', type: 'boolean' },
-          ]
-        };
-      case 'roles':
-        return {
-          endpoint: 'rol',
-          title: 'Gestión de Roles',
-          columns: [
-            { key: 'id', label: 'ID' },
-            { key: 'nombre', label: 'Nombre' },
-          ]
-        };
-      case 'categorias':
-        return {
-          endpoint: 'categoria',
-          title: 'Gestión de Categorías',
-          columns: [
-            { key: 'id', label: 'ID' },
-            { key: 'nombre', label: 'Nombre' },
-          ]
-        };
-      case 'artistas':
-        return {
-          endpoint: 'artista',
-          title: 'Gestión de Artistas',
-          columns: [
-            { key: 'id', label: 'ID' },
-            { key: 'nombre', label: 'Nombre' },
-          ]
-        };
-      case 'vinilos':
-        return {
-          endpoint: 'vinilo',
-          title: 'Gestión de Vinilos',
-          columns: [
-            { key: 'id', label: 'ID' },
-            { key: 'titulo', label: 'Título' },
-            { key: 'precio', label: 'Precio', type: 'number' },
-            { key: 'stock', label: 'Stock', type: 'number' },
-            { key: 'anioLanzamiento', label: 'Año', type: 'number' },
-            { key: 'categoriaId', label: 'Categoría ID', type: 'number' },
-            { key: 'artistaId', label: 'Artista ID', type: 'number' },
-          ]
-        };
-      case 'pedidos':
-        return {
-          endpoint: 'pedido',
-          title: 'Gestión de Pedidos',
-          columns: [
-            { key: 'id', label: 'ID' },
-            { key: 'usuarioId', label: 'Usuario ID', type: 'number' },
-            { key: 'importeTotal', label: 'Importe Total', type: 'number' },
-            { key: 'estado', label: 'Estado' },
-            { key: 'fechaCreacion', label: 'Fecha Creación', hideInForm: true },
-          ]
-        };
-      case 'detalles-pedido':
-        return {
-          endpoint: 'detalle-pedido', // endpoint might be 'detalle-pedido' in NestJS based on module name
-          title: 'Detalles de Pedido',
-          columns: [
-            { key: 'id', label: 'ID' },
-            { key: 'pedidoId', label: 'Pedido ID', type: 'number' },
-            { key: 'viniloId', label: 'Vinilo ID', type: 'number' },
-            { key: 'cantidad', label: 'Cantidad', type: 'number' },
           ]
         };
       default:
@@ -107,6 +37,119 @@ const AdminPanel = ({ toggleTheme, isDarkMode }) => {
   };
 
   const config = getTableConfig();
+
+  const renderCatalogo = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+      <CrudTable 
+        endpoint="vinilo"
+        title="Vinilos"
+        columns={[
+          { key: 'id', label: 'ID' },
+          { 
+            key: 'portada', 
+            label: 'Portada', 
+            type: 'image', 
+            required: false, 
+            render: (row) => (
+              <div className="table-portada-preview">
+                {row.portada ? (
+                  <img src={row.portada} alt={row.titulo} />
+                ) : (
+                  <div className="table-portada-fallback">💿</div>
+                )}
+              </div>
+            )
+          },
+          { key: 'titulo', label: 'Título' },
+          { key: 'precio', label: 'Precio', type: 'number' },
+          { key: 'stock', label: 'Stock', type: 'number' },
+          { key: 'anioLanzamiento', label: 'Año', type: 'number' },
+          { key: 'categoriaId', label: 'Categoría', type: 'select', selectEndpoint: 'categoria', optionLabel: 'nombre', render: (row) => row.categoria ? row.categoria.nombre : row.categoriaId },
+          { key: 'artistaId', label: 'Artista', type: 'select', selectEndpoint: 'artista', optionLabel: 'nombre', render: (row) => row.artista ? row.artista.nombre : row.artistaId },
+        ]}
+      />
+      <CrudTable 
+        endpoint="categoria"
+        title="Categorías"
+        columns={[
+          { key: 'id', label: 'ID' },
+          { key: 'nombre', label: 'Nombre' },
+        ]}
+      />
+      <CrudTable 
+        endpoint="artista"
+        title="Artistas"
+        columns={[
+          { key: 'id', label: 'ID' },
+          { key: 'nombre', label: 'Nombre' },
+        ]}
+      />
+    </div>
+  );
+
+  const renderPedidos = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+      <CrudTable 
+        endpoint="pedido"
+        title="Pedidos"
+        canAdd={false}
+        columns={[
+          { key: 'id', label: 'ID' },
+          { key: 'usuarioId', label: 'Usuario', type: 'select', selectEndpoint: 'usuario', optionLabel: 'nombre', render: (row) => row.usuario ? row.usuario.nombre : row.usuarioId },
+          { key: 'importeTotal', label: 'Importe Total', type: 'number', render: (row) => `${parseFloat(row.importeTotal).toFixed(2)} €` },
+          { key: 'estado', label: 'Estado' },
+          { key: 'fechaCreacion', label: 'Fecha Creación', hideInForm: true, render: (row) => new Date(row.fechaCreacion).toLocaleString('es-ES') },
+        ]}
+        expandableRowRender={(pedido) => {
+          if (!pedido.vinilos || pedido.vinilos.length === 0) {
+            return <div className="no-details">No hay detalles asociados a este pedido.</div>;
+          }
+          return (
+            <div className="pedido-details-expand">
+              <h4>📦 Desglose de Productos del Pedido #{pedido.id}</h4>
+              <table className="pedido-details-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '60px' }}>Portada</th>
+                    <th>Vinilo</th>
+                    <th>Artista</th>
+                    <th>Precio Unitario</th>
+                    <th>Cantidad</th>
+                    <th>Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pedido.vinilos.map((item) => {
+                    const vinilo = item.vinilo || {};
+                    const precio = parseFloat(vinilo.precio) || 0;
+                    const subtotal = precio * item.cantidad;
+                    return (
+                      <tr key={item.id}>
+                        <td>
+                          <div className="table-portada-preview" style={{ width: '40px', height: '40px' }}>
+                            {vinilo.portada ? (
+                              <img src={vinilo.portada} alt={vinilo.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              <div className="table-portada-fallback" style={{ fontSize: '1rem' }}>💿</div>
+                            )}
+                          </div>
+                        </td>
+                        <td><strong>{vinilo.titulo || `Vinilo #${item.viniloId}`}</strong></td>
+                        <td>{vinilo.artista?.nombre || '-'}</td>
+                        <td>{precio.toFixed(2)} €</td>
+                        <td>{item.cantidad}</td>
+                        <td><strong>{subtotal.toFixed(2)} €</strong></td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          );
+        }}
+      />
+    </div>
+  );
 
   return (
     <div className="admin-layout">
@@ -156,14 +199,22 @@ const AdminPanel = ({ toggleTheme, isDarkMode }) => {
         </div>
       </div>
       <div className="admin-content">
-        {config && (
-          <CrudTable 
-            key={config.endpoint} // reset state on tab change
-            endpoint={config.endpoint}
-            columns={config.columns}
-            title={config.title}
-          />
+        
+        {activeTab === 'catalogo' ? (
+          renderCatalogo()
+        ) : activeTab === 'pedidos' ? (
+          renderPedidos()
+        ) : (
+          config && (
+            <CrudTable 
+              key={config.endpoint} // reset state on tab change
+              endpoint={config.endpoint}
+              columns={config.columns}
+              title={config.title}
+            />
+          )
         )}
+
       </div>
     </div>
   );

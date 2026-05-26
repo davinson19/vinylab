@@ -28,7 +28,7 @@ export class UsuarioService {
   }
 
   findAll() {
-    return this.prisma.usuario.findMany();
+    return this.prisma.usuario.findMany({ include: { rol: true } });
   }
 
   findOne(id: number) {
@@ -38,9 +38,19 @@ export class UsuarioService {
   }
 
   async update(id: number, updateUsuarioDto: UpdateUsuarioDto) {
+    const existing = await this.prisma.usuario.findUnique({ where: { id } });
+    if (!existing) {
+      throw new Error('Usuario no encontrado');
+    }
+
     if (updateUsuarioDto.contrasena) {
-      const saltOrRounds = 10;
-      updateUsuarioDto.contrasena = await bcrypt.hash(updateUsuarioDto.contrasena, saltOrRounds);
+      if (updateUsuarioDto.contrasena === existing.contrasena) {
+        // Si es el mismo hash, removerlo para no sobreescribir ni re-encriptar
+        delete updateUsuarioDto.contrasena;
+      } else {
+        const saltOrRounds = 10;
+        updateUsuarioDto.contrasena = await bcrypt.hash(updateUsuarioDto.contrasena, saltOrRounds);
+      }
     }
     
     return this.prisma.usuario.update({

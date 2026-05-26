@@ -8,19 +8,62 @@ export class PedidoService {
   constructor(private readonly prisma: PrismaService) {}
 
   create(createPedidoDto: CreatePedidoDto) {
+    const { vinilos, ...pedidoData } = createPedidoDto;
     return this.prisma.pedido.create({
-      data: createPedidoDto,
+      data: {
+        ...pedidoData,
+        vinilos: vinilos ? {
+          create: vinilos.map(v => ({
+            viniloId: v.viniloId,
+            cantidad: v.cantidad
+          }))
+        } : undefined
+      },
+      include: {
+        vinilos: {
+          include: {
+            vinilo: {
+              include: {
+                artista: true
+              }
+            }
+          }
+        }
+      }
     });
   }
 
   findAll() {
-    return this.prisma.pedido.findMany({ include: { vinilos: true } });
+    return this.prisma.pedido.findMany({
+      include: {
+        vinilos: {
+          include: {
+            vinilo: {
+              include: {
+                artista: true
+              }
+            }
+          }
+        },
+        usuario: true
+      }
+    });
   }
 
   findByUsuario(usuarioId: number) {
     return this.prisma.pedido.findMany({
       where: { usuarioId },
-      include: { vinilos: true },
+      include: {
+        vinilos: {
+          include: {
+            vinilo: {
+              include: {
+                artista: true
+              }
+            }
+          }
+        }
+      },
     });
   }
 
@@ -31,9 +74,13 @@ export class PedidoService {
   }
 
   update(id: number, updatePedidoDto: UpdatePedidoDto) {
+    const { vinilos, usuarioId, ...pedidoData } = updatePedidoDto;
     return this.prisma.pedido.update({
       where: { id },
-      data: updatePedidoDto,
+      data: {
+        ...pedidoData,
+        ...(usuarioId ? { usuario: { connect: { id: usuarioId } } } : {}),
+      },
     });
   }
 

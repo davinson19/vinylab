@@ -27,7 +27,6 @@ model Usuario {
   nombre     String  @unique
   contrasena String
   direccion  String?
-  verificado Boolean @default(false)
 
   // Un usuario pertenece a un rol
   rol     Rol      @relation(fields: [rolId], references: [id])
@@ -80,7 +79,7 @@ model Pedido {
   fechaCreacion DateTime @default(now())
 
   // Un pedido pertenece a un usuario
-  usuario Usuario         @relation(fields: [usuarioId], references: [id])
+  usuario Usuario         @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   // Un pedido puede tener muchos vinilos
   vinilos DetallePedido[]
 }
@@ -92,7 +91,7 @@ model DetallePedido {
   cantidad Int @default(1)
 
   // Un detalle de pedido pertenece a un pedido
-  pedido Pedido @relation(fields: [pedidoId], references: [id])
+  pedido Pedido @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
   // Un detalle de pedido tiene asociado un vinilo
   vinilo Vinilo @relation(fields: [viniloId], references: [id])
 }

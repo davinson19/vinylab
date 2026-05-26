@@ -19,4 +19,6 @@ export class CreatePedidoDto {
   @IsString()
   @IsOptional()
   estado?: string;
+
+  vinilos?: { viniloId: number; cantidad: number }[];
 }

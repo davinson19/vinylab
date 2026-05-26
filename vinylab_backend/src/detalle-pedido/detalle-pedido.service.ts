@@ -14,7 +14,16 @@ export class DetallePedidoService {
   }
 
   findAll() {
-    return this.prisma.detallePedido.findMany();
+    return this.prisma.detallePedido.findMany({
+      include: {
+        pedido: {
+          include: {
+            usuario: true,
+          },
+        },
+        vinilo: true,
+      },
+    });
   }
 
   findOne(id: number) {

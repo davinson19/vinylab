@@ -4,5 +4,4 @@ export class ReadUsuarioDto {
   email: string;
   nombre: string;
   direccion: string | null;
-  verificado: boolean;
 }

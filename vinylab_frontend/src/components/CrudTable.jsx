@@ -1,14 +1,131 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { fetchApi } from '../utils/api';
 
-const CrudTable = ({ endpoint, columns, title }) => {
+const ImageUploadField = ({ value, onChange, label, required }) => {
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleFile = (file) => {
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecciona un archivo de imagen válido.');
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      onChange(e.target.result); // Base64 string
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFile(e.target.files[0]);
+    }
+  };
+
+  const handleRemove = () => {
+    onChange('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const getImageSizeText = () => {
+    if (!value) return '';
+    if (value.startsWith('http')) return 'Imagen remota (URL)';
+    const bytes = Math.round((value.length * 3) / 4);
+    if (bytes < 1024) return `${bytes} B`;
+    const kb = (bytes / 1024).toFixed(1);
+    if (kb < 1024) return `${kb} KB`;
+    return `${(kb / 1024).toFixed(1)} MB`;
+  };
+
+  return (
+    <div className="form-group">
+      <label className="form-label">{label}</label>
+      <div className="image-input-container">
+        <div 
+          className={`image-dropzone ${dragActive ? 'drag-active' : ''}`}
+          onDragEnter={handleDrag}
+          onDragOver={handleDrag}
+          onDragLeave={handleDrag}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            accept="image/*"
+            onChange={handleFileChange}
+          />
+          <span className="dropzone-icon">🖼️</span>
+          <span className="dropzone-text">Arrastra una imagen aquí o haz clic para buscar</span>
+          <span className="dropzone-subtext">Soporta PNG, JPG, WEBP</span>
+        </div>
+
+        {value && (
+          <div className="image-preview-panel fade-in">
+            <div className="image-preview-box">
+              <img src={value} alt="Previsualización de portada" />
+            </div>
+            <div className="image-preview-info">
+              <div className="image-preview-title" title={value.startsWith('data:') ? 'Imagen en Base64' : value}>
+                {value.startsWith('data:') ? 'Imagen cargada localmente' : value}
+              </div>
+              <div className="image-preview-size">{getImageSizeText()}</div>
+              <button 
+                type="button" 
+                className="btn-remove-image" 
+                onClick={handleRemove}
+              >
+                Eliminar Portada
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRender }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
+  const [expandedRows, setExpandedRows] = useState({});
+
+  const toggleRowExpand = (id) => {
+    setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({});
+  const [selectOptions, setSelectOptions] = useState({});
 
   const loadData = async () => {
     setLoading(true);
@@ -25,7 +142,63 @@ const CrudTable = ({ endpoint, columns, title }) => {
 
   useEffect(() => {
     loadData();
+
+    // Establecer conexión SSE para sincronización en tiempo real de la tabla
+    const eventSource = new EventSource('http://localhost:3000/realtime/sse');
+
+    eventSource.onmessage = (event) => {
+      try {
+        const payload = JSON.parse(event.data);
+        const { type, data } = payload;
+
+        // Comprobar si el tipo de evento coincide con el recurso de la tabla actual (ej. 'vinilo_')
+        if (type.startsWith(`${endpoint}_`)) {
+          console.log(`CrudTable [${endpoint}] recibió evento en tiempo real:`, type, data);
+          
+          if (type === `${endpoint}_created`) {
+            setData(prev => {
+              // Evitar duplicados
+              if (prev.some(item => item.id === data.id)) return prev;
+              return [data, ...prev];
+            });
+          } else if (type === `${endpoint}_updated`) {
+            setData(prev => prev.map(item => item.id === data.id ? data : item));
+          } else if (type === `${endpoint}_deleted`) {
+            setData(prev => prev.filter(item => item.id !== data.id));
+          }
+        }
+      } catch (err) {
+        console.error(`Error al procesar evento SSE en CrudTable [${endpoint}]:`, err);
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      console.error(`Error en la conexión SSE de CrudTable [${endpoint}]. Reconectando...`, err);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
   }, [endpoint]);
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      const optionsData = {};
+      for (const col of columns) {
+        if (col.type === 'select' && col.selectEndpoint) {
+          try {
+            const data = await fetchApi(`/${col.selectEndpoint}`);
+            optionsData[col.key] = data;
+          } catch (err) {
+            console.error(`Error fetching options for ${col.key}:`, err);
+          }
+        }
+      }
+      setSelectOptions(optionsData);
+    };
+    fetchOptions();
+  }, [columns]);
 
   const handleOpenModal = (item = null) => {
     if (item) {
@@ -47,7 +220,11 @@ const CrudTable = ({ endpoint, columns, title }) => {
   const handleChange = (e) => {
     const { name, value, type } = e.target;
     let parsedValue = value;
-    if (type === 'number') {
+    
+    const col = columns.find(c => c.key === name);
+    if (col && col.type === 'select') {
+      parsedValue = value === '' ? '' : Number(value);
+    } else if (type === 'number') {
       parsedValue = value === '' ? '' : Number(value);
     } else if (type === 'checkbox') {
       parsedValue = e.target.checked;
@@ -104,9 +281,11 @@ const CrudTable = ({ endpoint, columns, title }) => {
     <div className="crud-container fade-in">
       <div className="admin-header">
         <h1>{title}</h1>
-        <button className="btn-primary" style={{ width: 'auto', marginTop: 0 }} onClick={() => handleOpenModal()}>
-          + Agregar Nuevo
-        </button>
+        {canAdd && (
+          <button className="btn-primary" style={{ width: 'auto', marginTop: 0 }} onClick={() => handleOpenModal()}>
+            + Agregar Nuevo
+          </button>
+        )}
       </div>
 
       {error && <div className="error-message" style={{marginBottom: '1rem'}}>{error}</div>}
@@ -118,6 +297,7 @@ const CrudTable = ({ endpoint, columns, title }) => {
           <table className="crud-table">
             <thead>
               <tr>
+                {expandableRowRender && <th style={{ width: '60px', textAlign: 'center' }}>Detalle</th>}
                 {columns.map(col => (
                   <th key={col.key}>{col.label}</th>
                 ))}
@@ -126,34 +306,57 @@ const CrudTable = ({ endpoint, columns, title }) => {
             </thead>
             <tbody>
               {data.map(row => (
-                <tr key={row.id}>
-                  {columns.map(col => {
-                    let cellValue = row[col.key];
-                    if (col.render) {
-                      cellValue = col.render(row);
-                    } else if (typeof cellValue === 'boolean') {
-                      cellValue = cellValue ? 'Sí' : 'No';
-                    } else if (typeof cellValue === 'object' && cellValue !== null) {
-                      // Fallback for nested objects
-                      cellValue = cellValue.nombre || cellValue.id || JSON.stringify(cellValue);
-                    }
-                    return <td key={col.key}>{cellValue}</td>;
-                  })}
-                  <td>
-                    <div className="table-actions">
-                      <button className="btn-icon" onClick={() => handleOpenModal(row)}>
-                        ✏️
-                      </button>
-                      <button className="btn-icon delete" onClick={() => handleDelete(row.id)}>
-                        🗑️
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                <React.Fragment key={row.id}>
+                  <tr>
+                    {expandableRowRender && (
+                      <td style={{ textAlign: 'center' }}>
+                        <button
+                          type="button"
+                          className="btn-expand"
+                          onClick={() => toggleRowExpand(row.id)}
+                          title={expandedRows[row.id] ? "Contraer detalles" : "Expandir detalles"}
+                        >
+                          {expandedRows[row.id] ? '▼' : '▶'}
+                        </button>
+                      </td>
+                    )}
+                    {columns.map(col => {
+                      let cellValue = row[col.key];
+                      if (col.render) {
+                        cellValue = col.render(row);
+                      } else if (typeof cellValue === 'boolean') {
+                        cellValue = cellValue ? 'Sí' : 'No';
+                      } else if (typeof cellValue === 'object' && cellValue !== null) {
+                        // Fallback for nested objects
+                        cellValue = cellValue.nombre || cellValue.id || JSON.stringify(cellValue);
+                      }
+                      return <td key={col.key}>{cellValue}</td>;
+                    })}
+                    <td>
+                      <div className="table-actions">
+                        <button className="btn-icon" onClick={() => handleOpenModal(row)}>
+                          ✏️
+                        </button>
+                        <button className="btn-icon delete" onClick={() => handleDelete(row.id)}>
+                          🗑️
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  {expandableRowRender && expandedRows[row.id] && (
+                    <tr className="expanded-row-details">
+                      <td colSpan={columns.length + 2}>
+                        <div className="expanded-details-container">
+                          {expandableRowRender(row)}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               ))}
               {data.length === 0 && (
                 <tr>
-                  <td colSpan={columns.length + 1} style={{ textAlign: 'center' }}>
+                  <td colSpan={columns.length + (expandableRowRender ? 2 : 1)} style={{ textAlign: 'center' }}>
                     No hay registros
                   </td>
                 </tr>
@@ -176,10 +379,46 @@ const CrudTable = ({ endpoint, columns, title }) => {
                   if (col.key === 'id' && !editingId) return null; // usually auto-increment
                   if (col.hideInForm) return null;
                   
+                  if (col.type === 'image') {
+                    return (
+                      <ImageUploadField
+                        key={col.key}
+                        label={col.label}
+                        value={formData[col.key] || ''}
+                        onChange={(val) => setFormData(prev => ({ ...prev, [col.key]: val }))}
+                        required={col.required !== false && col.key !== 'id' && !formData[col.key]}
+                      />
+                    );
+                  }
+                  
                   return (
                     <div className="form-group" key={col.key}>
                       <label className="form-label">{col.label}</label>
-                      {col.type === 'boolean' ? (
+                      {col.type === 'select' ? (
+                        <select
+                          name={col.key}
+                          className="form-input"
+                          value={formData[col.key] !== undefined ? formData[col.key] : ''}
+                          onChange={handleChange}
+                          disabled={col.key === 'id'}
+                          required={col.required !== false && col.key !== 'id'}
+                        >
+                          <option value="">Seleccione...</option>
+                          {(selectOptions[col.key] || []).map(opt => {
+                            let labelStr = '';
+                            if (typeof col.optionLabel === 'function') {
+                              labelStr = col.optionLabel(opt);
+                            } else {
+                              labelStr = opt[col.optionLabel || 'nombre'] || opt.id;
+                            }
+                            return (
+                              <option key={opt.id} value={opt.id}>
+                                {labelStr}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      ) : col.type === 'boolean' ? (
                         <input
                           type="checkbox"
                           name={col.key}

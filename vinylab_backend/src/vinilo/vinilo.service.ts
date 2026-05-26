@@ -14,7 +14,7 @@ export class ViniloService {
   }
 
   findAll() {
-    return this.prisma.vinilo.findMany();
+    return this.prisma.vinilo.findMany({ include: { categoria: true, artista: true } });
   }
 
   findOne(id: number) {
