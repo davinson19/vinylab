@@ -177,7 +177,7 @@
 .dropdown-user-name {
   font-weight: 600;
   font-size: 0.95rem;
-  color: var(--text);
+  color: var(--primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

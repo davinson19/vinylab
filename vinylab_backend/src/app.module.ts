@@ -10,7 +10,6 @@ import { CategoriaModule } from './categoria/categoria.module';
 import { ArtistaModule } from './artista/artista.module';
 import { ViniloModule } from './vinilo/vinilo.module';
 import { PedidoModule } from './pedido/pedido.module';
-import { DetallePedidoModule } from './detalle-pedido/detalle-pedido.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
@@ -25,7 +24,6 @@ import { RolesGuard } from './auth/guards/roles.guard';
     ArtistaModule,
     ViniloModule,
     PedidoModule,
-    DetallePedidoModule,
     AuthModule,
   ],
   controllers: [AppController],
@@ -42,3 +40,4 @@ import { RolesGuard } from './auth/guards/roles.guard';
   ],
 })
 export class AppModule {}
+

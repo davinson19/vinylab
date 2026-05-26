@@ -444,19 +444,8 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                   <div className="dropdown-user-name">
                     {loadingUser ? 'Cargando...' : user ? user.nombre : 'Cliente VinyLab'}
                   </div>
-                  <div className="dropdown-user-role">Cliente</div>
                 </div>
                 
-                <button 
-                  className={`dropdown-item ${activeView === 'store' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveView('store');
-                    setIsDropdownOpen(false);
-                  }}
-                >
-                  💿 Ir al Catálogo
-                </button>
-
                 <button 
                   className={`dropdown-item ${activeView === 'orders' ? 'active' : ''}`}
                   onClick={() => {
@@ -464,7 +453,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                     setIsDropdownOpen(false);
                   }}
                 >
-                  📋 Mis Pedidos
+                  Historial de pedidos
                 </button>
 
                 <button 
@@ -474,13 +463,13 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                     setIsDropdownOpen(false);
                   }}
                 >
-                  ⚙️ Configurar Cuenta
+                  Configuración
                 </button>
 
                 <div className="dropdown-divider"></div>
 
                 <button className="dropdown-item logout" onClick={handleLogout}>
-                  🚪 Cerrar Sesión
+                  Cerrar Sesión
                 </button>
               </div>
             )}
@@ -636,7 +625,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
           /* My Orders View */
           <div className="orders-view-container fade-in">
             <div className="orders-view-header">
-              <h2 className="orders-view-title">Mis Pedidos</h2>
+              <h2 className="orders-view-title">Historial de pedidos</h2>
               <p className="orders-view-subtitle">Consulta el historial y los detalles de tus compras en VinyLab</p>
             </div>
             
