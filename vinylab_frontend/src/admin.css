@@ -95,7 +95,11 @@
   flex: 1;
   padding: 2rem;
   overflow-y: auto;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.light-mode .admin-content {
+  background: transparent;
 }
 
 .admin-header {
@@ -148,12 +152,18 @@
 }
 
 .crud-table th {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.25);
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
   font-size: 0.75rem;
   letter-spacing: 0.05em;
+}
+
+.light-mode .crud-table th {
+  background: rgba(204, 164, 4, 0.05);
+  color: var(--text);
+  border-bottom: 1px solid rgba(204, 164, 4, 0.15);
 }
 
 .crud-table tr:last-child td {
@@ -166,6 +176,10 @@
 
 .crud-table tbody tr:hover {
   background: rgba(255, 255, 255, 0.03);
+}
+
+.light-mode .crud-table tbody tr:hover {
+  background: rgba(204, 164, 4, 0.02);
 }
 
 .table-actions {
@@ -287,20 +301,31 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.8));
+  background: linear-gradient(135deg, #1a1a1a, #050505);
   color: var(--text-muted);
   font-size: 1.25rem;
+}
+
+.light-mode .table-portada-fallback {
+  background: linear-gradient(135deg, #ffffff, #f1f5f9);
+  color: var(--text-muted);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .image-input-container {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(15, 15, 15, 0.5);
   border: 1px solid var(--surface-border);
   border-radius: 12px;
   padding: 1rem;
   margin-top: 0.25rem;
+}
+
+.light-mode .image-input-container {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(204, 164, 4, 0.2);
 }
 
 .image-input-modes {
@@ -350,6 +375,16 @@
   overflow: hidden;
 }
 
+.light-mode .image-dropzone {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(204, 164, 4, 0.25);
+}
+
+.light-mode .image-dropzone:hover, .light-mode .image-dropzone.drag-active {
+  border-color: var(--primary);
+  background: rgba(204, 164, 4, 0.04);
+}
+
 .image-dropzone:hover, .image-dropzone.drag-active {
   border-color: var(--primary);
   background: rgba(204, 164, 4, 0.05);
@@ -386,6 +421,11 @@
   border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 0.75rem;
+}
+
+.light-mode .image-preview-panel {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(204, 164, 4, 0.15);
 }
 
 .image-preview-box {
@@ -448,17 +488,27 @@
 
 /* Estilos para detalles expandidos de pedidos */
 .expanded-row-details {
-  background: rgba(15, 23, 42, 0.45) !important;
+  background: rgba(10, 10, 10, 0.5) !important;
+}
+
+.light-mode .expanded-row-details {
+  background: rgba(0, 0, 0, 0.01) !important;
 }
 
 .expanded-details-container {
   padding: 1.5rem;
   border-top: 1px dashed var(--surface-border);
   border-bottom: 1px dashed var(--surface-border);
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.3);
   border-radius: 12px;
   margin: 0.75rem 1rem;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.light-mode .expanded-details-container {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(204, 164, 4, 0.15);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
 }
 
 .pedido-details-expand {
@@ -506,6 +556,12 @@
   border-bottom: 1px solid var(--surface-border);
 }
 
+.light-mode .pedido-details-table th {
+  background: rgba(204, 164, 4, 0.05);
+  color: var(--text);
+  border-bottom: 1px solid rgba(204, 164, 4, 0.1);
+}
+
 .pedido-details-table td {
   border-bottom: 1px solid var(--surface-border);
   vertical-align: middle;
@@ -522,6 +578,10 @@
 
 .pedido-details-table tbody tr:hover {
   background: rgba(255, 255, 255, 0.02);
+}
+
+.light-mode .pedido-details-table tbody tr:hover {
+  background: rgba(204, 164, 4, 0.02);
 }
 
 .btn-expand {

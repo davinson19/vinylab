@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchApi } from '../utils/api';
 import logo from '../assets/logo.png';
+import welcomeGif from '../assets/a219c71690011555e2f70cbb5579b5a9.gif';
 
 const StoreLayout = ({ toggleTheme, isDarkMode }) => {
   const navigate = useNavigate();
@@ -42,6 +43,18 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
   // Orders States
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
+
+  // Payment Gateway States
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [paymentData, setPaymentData] = useState({
+    numero: '',
+    nombre: '',
+    expiracion: '',
+    cvv: ''
+  });
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [isPaymentSuccess, setIsPaymentSuccess] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
 
   // Decode user ID from token
   const token = localStorage.getItem('token');
@@ -242,9 +255,70 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
   const cartTotal = cart.reduce((total, item) => total + (parseFloat(item.precio) * item.quantity), 0);
 
-  const handleCheckout = async () => {
+  const openPaymentGateway = () => {
     if (cart.length === 0) return;
+    setPaymentError('');
+    setPaymentData({
+      numero: '',
+      nombre: '',
+      expiracion: '',
+      cvv: ''
+    });
+    setIsPaymentOpen(true);
+    setIsCartOpen(false); // Close cart drawer
+  };
+
+  const handlePaymentInputChange = (e) => {
+    let { name, value } = e.target;
+    
+    if (name === 'numero') {
+      value = value.replace(/\D/g, '').substring(0, 16);
+      value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+    } else if (name === 'expiracion') {
+      value = value.replace(/\D/g, '').substring(0, 4);
+      if (value.length > 2) {
+        value = value.substring(0, 2) + '/' + value.substring(2);
+      }
+    } else if (name === 'cvv') {
+      value = value.replace(/\D/g, '').substring(0, 3);
+    } else if (name === 'nombre') {
+      value = value.toUpperCase();
+    }
+
+    setPaymentData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handlePaymentSubmit = async (e) => {
+    e.preventDefault();
+    setPaymentError('');
+    
+    const { numero, nombre, expiracion, cvv } = paymentData;
+    if (numero.replace(/\s/g, '').length !== 16) {
+      setPaymentError('El número de tarjeta debe tener 16 dígitos.');
+      return;
+    }
+    if (!nombre.trim()) {
+      setPaymentError('Por favor, ingresa el nombre del titular.');
+      return;
+    }
+    if (!/^\d{2}\/\d{2}$/.test(expiracion)) {
+      setPaymentError('La fecha de expiración debe tener formato MM/YY.');
+      return;
+    }
+    if (cvv.length !== 3) {
+      setPaymentError('El código CVV debe tener 3 dígitos.');
+      return;
+    }
+
+    setIsProcessingPayment(true);
+
     try {
+      // Simulate validation / bank delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
       const payload = {
         importeTotal: parseFloat(cartTotal.toFixed(2)),
         estado: 'PAGADO',
@@ -259,13 +333,21 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
         body: JSON.stringify(payload)
       });
 
-      alert(`¡Pedido #${response.id} realizado con éxito!`);
-      setCart([]);
-      setIsCartOpen(false);
-      loadVinyls(); // Reload vinyls to refresh stocks
-      setActiveView('orders'); // Open orders view
+      setIsProcessingPayment(false);
+      setIsPaymentSuccess(true);
+
+      // Auto redirect after 2.5 seconds
+      setTimeout(() => {
+        setCart([]);
+        setIsPaymentOpen(false);
+        setIsPaymentSuccess(false);
+        loadVinyls(); // Reload vinyls to refresh stocks
+        setActiveView('orders'); // Open orders view
+      }, 2500);
+
     } catch (err) {
-      alert(err.message || 'Error al procesar el pedido. Inténtelo de nuevo.');
+      setIsProcessingPayment(false);
+      setPaymentError(err.message || 'Error al procesar el pago. Inténtelo de nuevo.');
     }
   };
 
@@ -406,15 +488,19 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
         </div>
       </header>
 
+      {activeView === 'store' && (
+        <div 
+          className="store-welcome-banner-full" 
+          style={{ backgroundImage: `linear-gradient(to bottom, rgba(var(--banner-bg-rgb), 0.25) 0%, rgba(var(--banner-bg-rgb), 0.7) 75%, var(--banner-bg) 100%), linear-gradient(to right, var(--banner-bg) 0%, rgba(var(--banner-bg-rgb), 0.2) 20%, rgba(var(--banner-bg-rgb), 0.2) 80%, var(--banner-bg) 100%), url(${welcomeGif})` }}
+        >
+          <h1 className="welcome-title">¡Hola{user ? `, ${user.nombre}` : ''}! Bienvenido a VinyLab</h1>
+        </div>
+      )}
+
       {/* Main Content Area */}
       <main className="store-content">
         {activeView === 'store' ? (
           <div className="fade-in">
-            {/* Welcome Banner */}
-            <div className="store-welcome-banner">
-              <h1>¡Hola{user ? `, ${user.nombre}` : ''}! Bienvenido a VinyLab</h1>
-              <p>Tu laboratorio de vinilos de confianza. Explora y descubre la música que mueve tu mundo.</p>
-            </div>
 
             {/* Filter and search bar */}
             <div className="store-filter-bar">
@@ -514,11 +600,6 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                       ) : (
                         <div style={{ fontSize: '4.5rem', userSelect: 'none' }}>💿</div>
                       )}
-                      
-                      <div className="vinyl-hover-disc">
-                        <div className="vinyl-hover-disc-grooves"></div>
-                        <div className="vinyl-hover-disc-center"></div>
-                      </div>
                     </div>
                     
                     <div className="vinyl-info">
@@ -527,13 +608,11 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                       
                       <div className="vinyl-card-meta">
                         <span className="vinyl-card-year">{vinyl.anioLanzamiento}</span>
-                        {vinyl.stock > 5 ? (
-                          <span className="vinyl-stock-badge in-stock">En Stock ({vinyl.stock})</span>
-                        ) : vinyl.stock > 0 ? (
-                          <span className="vinyl-stock-badge low-stock">¡Últimas {vinyl.stock} u.!</span>
-                        ) : (
+                        {vinyl.stock <= 0 ? (
                           <span className="vinyl-stock-badge out-of-stock">Agotado</span>
-                        )}
+                        ) : vinyl.stock <= 3 ? (
+                          <span className="vinyl-stock-badge low-stock">¡Últimas unidades!</span>
+                        ) : null}
                       </div>
                     </div>
                     
@@ -797,14 +876,6 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                   <div className="cart-empty-vinyl">💿</div>
                   <h3>Tu carrito está vacío</h3>
                   <p>Parece que aún no has agregado nada. ¡Explora nuestro catálogo y llévate tu música favorita!</p>
-                  <button 
-                    type="button" 
-                    className="btn-accent" 
-                    onClick={() => setIsCartOpen(false)}
-                    style={{ marginTop: '1rem' }}
-                  >
-                    Volver a comprar
-                  </button>
                 </div>
               ) : (
                 cart.map(item => (
@@ -870,10 +941,167 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                 <button 
                   type="button" 
                   className="btn-checkout"
-                  onClick={handleCheckout}
+                  onClick={openPaymentGateway}
                 >
                   Completar Compra
                 </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Payment Gateway Modal Overlay */}
+      {isPaymentOpen && (
+        <div className="payment-modal-overlay">
+          <div className="payment-modal-card fade-in">
+            {isPaymentSuccess ? (
+              <div className="payment-success-screen">
+                <div className="success-icon-wrapper animate-pop">
+                  <svg className="success-checkmark" viewBox="0 0 52 52">
+                    <circle className="success-checkmark-circle" cx="26" cy="26" r="25" fill="none" />
+                    <path className="success-checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+                  </svg>
+                </div>
+                <h2>¡Pago Procesado con Éxito!</h2>
+                <p>Tu pedido ha sido creado y el stock de vinilos actualizado. Redirigiendo a tu historial...</p>
+              </div>
+            ) : (
+              <div className="payment-modal-body">
+                <button 
+                  type="button" 
+                  className="btn-close-payment" 
+                  onClick={() => setIsPaymentOpen(false)}
+                  disabled={isProcessingPayment}
+                  title="Cancelar y cerrar"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+
+                <div className="payment-layout-cols">
+                  <div className="payment-card-preview-col">
+                    <h3>Resumen de Pago</h3>
+
+                    <div className="payment-summary-box">
+                      <div className="summary-row">
+                        <span>Subtotal de Vinilos:</span>
+                        <span>{cartTotal.toFixed(2)} €</span>
+                      </div>
+                      <div className="summary-row">
+                        <span>Envío Asegurado:</span>
+                        <span className="free-shipping">¡GRATIS!</span>
+                      </div>
+                      <div className="summary-divider"></div>
+                      <div className="summary-row total">
+                        <span>Total a Pagar:</span>
+                        <span>{cartTotal.toFixed(2)} €</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="payment-form-col">
+                    <h2>Método de Pago</h2>
+                    <p className="payment-subtitle">Ingresa la información de tu tarjeta de crédito o débito segura para completar el pedido.</p>
+
+                    {paymentError && (
+                      <div className="error-message payment-error-alert fade-in">
+                        ⚠️ {paymentError}
+                      </div>
+                    )}
+
+                    <form onSubmit={handlePaymentSubmit}>
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="card-nombre">Nombre del Titular</label>
+                        <input
+                          type="text"
+                          id="card-nombre"
+                          name="nombre"
+                          className="form-input"
+                          placeholder=""
+                          value={paymentData.nombre}
+                          onChange={handlePaymentInputChange}
+                          disabled={isProcessingPayment}
+                          required
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="card-numero">Número de Tarjeta</label>
+                        <input
+                          type="text"
+                          id="card-numero"
+                          name="numero"
+                          className="form-input card-num-input"
+                          placeholder=""
+                          value={paymentData.numero}
+                          onChange={handlePaymentInputChange}
+                          disabled={isProcessingPayment}
+                          required
+                        />
+                      </div>
+
+                      <div className="form-row-two-cols">
+                        <div className="form-group">
+                          <label className="form-label" htmlFor="card-expiracion">Vencimiento</label>
+                          <input
+                            type="text"
+                            id="card-expiracion"
+                            name="expiracion"
+                            className="form-input"
+                            placeholder="MM/YY"
+                            value={paymentData.expiracion}
+                            onChange={handlePaymentInputChange}
+                            disabled={isProcessingPayment}
+                            required
+                          />
+                        </div>
+
+                        <div className="form-group">
+                          <label className="form-label" htmlFor="card-cvv">CVV</label>
+                          <input
+                            type="password"
+                            id="card-cvv"
+                            name="cvv"
+                            className="form-input"
+                            placeholder="•••"
+                            value={paymentData.cvv}
+                            onChange={handlePaymentInputChange}
+                            disabled={isProcessingPayment}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="payment-actions-row">
+                        <button
+                          type="button"
+                          className="btn-payment-cancel"
+                          onClick={() => setIsPaymentOpen(false)}
+                          disabled={isProcessingPayment}
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="submit"
+                          className="btn-payment-submit"
+                          disabled={isProcessingPayment}
+                        >
+                          {isProcessingPayment ? (
+                            <span className="spinner-loader-row">
+                              <span className="payment-spinner"></span>
+                              Verificando...
+                            </span>
+                          ) : (
+                            `Pagar ${cartTotal.toFixed(2)} €`
+                          )}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
               </div>
             )}
           </div>

@@ -7,9 +7,11 @@ import { UpdatePedidoDto } from './dto/update-pedido.dto';
 export class PedidoService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(createPedidoDto: CreatePedidoDto) {
+  async create(createPedidoDto: CreatePedidoDto) {
     const { vinilos, ...pedidoData } = createPedidoDto;
-    return this.prisma.pedido.create({
+    
+    // Create the order
+    const pedido = await this.prisma.pedido.create({
       data: {
         ...pedidoData,
         vinilos: vinilos ? {
@@ -31,6 +33,25 @@ export class PedidoService {
         }
       }
     });
+
+    // Check if the order is established as PAGADO (default is PAGADO, or explicitly set to PAGADO)
+    const isPaid = !createPedidoDto.estado || createPedidoDto.estado === 'PAGADO';
+    if (isPaid && vinilos && vinilos.length > 0) {
+      for (const item of vinilos) {
+        const vinilo = await this.prisma.vinilo.findUnique({
+          where: { id: item.viniloId }
+        });
+        if (vinilo) {
+          const newStock = Math.max(0, vinilo.stock - item.cantidad);
+          await this.prisma.vinilo.update({
+            where: { id: item.viniloId },
+            data: { stock: newStock }
+          });
+        }
+      }
+    }
+
+    return pedido;
   }
 
   findAll() {
@@ -73,8 +94,39 @@ export class PedidoService {
     });
   }
 
-  update(id: number, updatePedidoDto: UpdatePedidoDto) {
+  async update(id: number, updatePedidoDto: UpdatePedidoDto) {
     const { vinilos, usuarioId, ...pedidoData } = updatePedidoDto;
+
+    // 1. Get the current order and its items before updating
+    const oldPedido = await this.prisma.pedido.findUnique({
+      where: { id },
+      include: { vinilos: true }
+    });
+
+    if (!oldPedido) {
+      throw new Error('Pedido no encontrado');
+    }
+
+    // 2. Check if transitioning to PAGADO
+    const willBePaid = updatePedidoDto.estado === 'PAGADO';
+    const wasPaid = oldPedido.estado === 'PAGADO';
+
+    if (willBePaid && !wasPaid) {
+      // Transition to paid: subtract stock
+      for (const item of oldPedido.vinilos) {
+        const vinilo = await this.prisma.vinilo.findUnique({
+          where: { id: item.viniloId }
+        });
+        if (vinilo) {
+          const newStock = Math.max(0, vinilo.stock - item.cantidad);
+          await this.prisma.vinilo.update({
+            where: { id: item.viniloId },
+            data: { stock: newStock }
+          });
+        }
+      }
+    }
+
     return this.prisma.pedido.update({
       where: { id },
       data: {
