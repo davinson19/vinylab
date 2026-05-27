@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Auth from './components/Auth';
-import AdminPanel from './components/AdminPanel';
-import ProtectedRoute from './components/ProtectedRoute';
-import StoreLayout from './components/StoreLayout';
+import PanelControl from './components/PanelControl';
+import RutaProtegida from './components/RutaProtegida';
+import Tienda from './components/Tienda';
 import './store.css';
 
 function App() {
@@ -42,11 +42,11 @@ function App() {
     }
   }, [isDarkMode]);
 
-  const toggleTheme = () => setIsDarkMode(!isDarkMode);
+  const alternarTema = () => setIsDarkMode(!isDarkMode);
 
-  const renderHome = () => {
+  const renderizarInicio = () => {
     if (!token) {
-      return <Auth toggleTheme={toggleTheme} isDarkMode={isDarkMode} />;
+      return <Auth toggleTheme={alternarTema} isDarkMode={isDarkMode} />;
     }
 
     try {
@@ -54,20 +54,20 @@ function App() {
       if (payload.rolName === 'Admin') {
         return <Navigate to="/admin" replace />;
       }
-      return <StoreLayout toggleTheme={toggleTheme} isDarkMode={isDarkMode} />;
+      return <Tienda toggleTheme={alternarTema} isDarkMode={isDarkMode} />;
     } catch (e) {
       localStorage.removeItem('token');
-      return <Auth toggleTheme={toggleTheme} isDarkMode={isDarkMode} />;
+      return <Auth toggleTheme={alternarTema} isDarkMode={isDarkMode} />;
     }
   };
 
   return (
     <Routes>
-      <Route path="/" element={renderHome()} />
+      <Route path="/" element={renderizarInicio()} />
       <Route path="/admin" element={
-        <ProtectedRoute>
-          <AdminPanel toggleTheme={toggleTheme} isDarkMode={isDarkMode} />
-        </ProtectedRoute>
+        <RutaProtegida>
+          <PanelControl toggleTheme={alternarTema} isDarkMode={isDarkMode} />
+        </RutaProtegida>
       } />
     </Routes>
   );

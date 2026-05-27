@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchApi } from '../utils/api';
 import logo from '../assets/logo.png';
-import welcomeGif from '../assets/a219c71690011555e2f70cbb5579b5a9.gif';
+import welcomeGif from '../assets/banner.gif';
 
-const StoreLayout = ({ toggleTheme, isDarkMode }) => {
+const Tienda = ({ toggleTheme, isDarkMode }) => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
@@ -74,7 +74,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
   }, [cart]);
 
   // Load vinyls and categories from database
-  const loadVinyls = async () => {
+  const cargarVinilos = async () => {
     setLoadingVinyls(true);
     try {
       const data = await fetchApi('/vinilo');
@@ -86,7 +86,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
     }
   };
 
-  const loadCategories = async () => {
+  const cargarCategorias = async () => {
     try {
       const data = await fetchApi('/categoria');
       const names = ['Todos', ...data.map(c => c.nombre)];
@@ -96,7 +96,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
     }
   };
 
-  const loadOrders = async () => {
+  const cargarPedidos = async () => {
     setLoadingOrders(true);
     try {
       const data = await fetchApi('/pedido');
@@ -111,8 +111,8 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
 
   // Fetch data on mount
   useEffect(() => {
-    loadVinyls();
-    loadCategories();
+    cargarVinilos();
+    cargarCategorias();
   }, []);
 
   // Fetch current user details on mount
@@ -144,29 +144,29 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
   // Load orders when active view is 'orders'
   useEffect(() => {
     if (activeView === 'orders') {
-      loadOrders();
+      cargarPedidos();
     }
   }, [activeView]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const clicFuera = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', clicFuera);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('mousedown', clicFuera);
     };
   }, []);
 
-  const handleLogout = () => {
+  const cierreSesion = () => {
     localStorage.removeItem('token');
     navigate('/');
   };
 
-  const handleProfileChange = (e) => {
+  const cambioPerfil = (e) => {
     const { name, value } = e.target;
     setProfileData(prev => ({
       ...prev,
@@ -174,7 +174,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
     }));
   };
 
-  const handleProfileSubmit = async (e) => {
+  const enviarPerfil = async (e) => {
     e.preventDefault();
     setSavingProfile(true);
     setProfileSuccess('');
@@ -211,7 +211,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
   };
 
   // Cart Operations
-  const addToCart = (vinyl) => {
+  const agregarAlCarrito = (vinyl) => {
     setCart(prevCart => {
       const existing = prevCart.find(item => item.id === vinyl.id);
       if (existing) {
@@ -235,7 +235,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
     setIsCartOpen(true); // Auto-open cart for premium feel
   };
 
-  const updateQuantity = (vinylId, newQty, stock) => {
+  const actualizarCantidad = (vinylId, newQty, stock) => {
     if (newQty < 1) return;
     if (newQty > stock) {
       alert(`Lo sentimos, solo hay ${stock} unidades disponibles.`);
@@ -248,14 +248,14 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
     );
   };
 
-  const removeFromCart = (vinylId) => {
+  const eliminarDelCarrito = (vinylId) => {
     setCart(prevCart => prevCart.filter(item => item.id !== vinylId));
   };
 
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
   const cartTotal = cart.reduce((total, item) => total + (parseFloat(item.precio) * item.quantity), 0);
 
-  const openPaymentGateway = () => {
+  const abrirPasarelaPago = () => {
     if (cart.length === 0) return;
     setPaymentError('');
     setPaymentData({
@@ -268,7 +268,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
     setIsCartOpen(false); // Close cart drawer
   };
 
-  const handlePaymentInputChange = (e) => {
+  const cambioInputPago = (e) => {
     let { name, value } = e.target;
     
     if (name === 'numero') {
@@ -291,7 +291,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
     }));
   };
 
-  const handlePaymentSubmit = async (e) => {
+  const enviarPago = async (e) => {
     e.preventDefault();
     setPaymentError('');
     
@@ -341,7 +341,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
         setCart([]);
         setIsPaymentOpen(false);
         setIsPaymentSuccess(false);
-        loadVinyls(); // Reload vinyls to refresh stocks
+        cargarVinilos(); // Reload vinyls to refresh stocks
         setActiveView('orders'); // Open orders view
       }, 2500);
 
@@ -351,9 +351,9 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
     }
   };
 
-  const handleRefreshStore = async () => {
+  const actualizarTienda = async () => {
     setIsRefreshing(true);
-    await Promise.all([loadVinyls(), loadCategories()]);
+    await Promise.all([cargarVinilos(), cargarCategorias()]);
     setIsRefreshing(false);
   };
 
@@ -384,8 +384,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
           {/* Cart Button */}
           <button
             type="button"
-            className="nav-btn"
-            style={{ position: 'relative' }}
+            className="nav-btn nav-btn-relative"
             onClick={() => setIsCartOpen(true)}
             title="Ver Carrito de Compras"
           >
@@ -466,9 +465,39 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                   Configuración
                 </button>
 
+                <button 
+                  className="dropdown-item"
+                  onClick={toggleTheme}
+                  title={isDarkMode ? 'Cambiar a Modo Día' : 'Cambiar a Modo Noche'}
+                >
+                  {isDarkMode ? (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                      </svg>
+                      Modo Día
+                    </>
+                  ) : (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                      </svg>
+                      Modo Noche
+                    </>
+                  )}
+                </button>
+
                 <div className="dropdown-divider"></div>
 
-                <button className="dropdown-item logout" onClick={handleLogout}>
+                <button className="dropdown-item logout" onClick={cierreSesion}>
                   Cerrar Sesión
                 </button>
               </div>
@@ -480,7 +509,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
       {activeView === 'store' && (
         <div 
           className="store-welcome-banner-full" 
-          style={{ backgroundImage: `linear-gradient(to bottom, rgba(var(--banner-bg-rgb), 0.25) 0%, rgba(var(--banner-bg-rgb), 0.7) 75%, var(--banner-bg) 100%), linear-gradient(to right, var(--banner-bg) 0%, rgba(var(--banner-bg-rgb), 0.2) 20%, rgba(var(--banner-bg-rgb), 0.2) 80%, var(--banner-bg) 100%), url(${welcomeGif})` }}
+          style={{ '--welcome-banner-url': `url(${welcomeGif})` }}
         >
           <h1 className="welcome-title">¡Hola{user ? `, ${user.nombre}` : ''}! Bienvenido a VinyLab</h1>
         </div>
@@ -522,9 +551,9 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
 
             {/* Catalog Grid */}
             {loadingVinyls ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '5rem' }}>
+              <div className="spinning-vinyl-container">
                 <div className="spinning-vinyl-wrapper">
-                  <div className="spinning-vinyl-outer" style={{ animationPlayState: 'running' }}>
+                  <div className="spinning-vinyl-outer running">
                     <div className="spinning-vinyl-grooves"></div>
                     <div className="spinning-vinyl-grooves-2"></div>
                     <div className="spinning-vinyl-center">
@@ -536,14 +565,14 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
             ) : vinyls.length === 0 ? (
               <div className="empty-store-container fade-in">
                 <div className="spinning-vinyl-wrapper">
-                  <div className="spinning-vinyl-outer" style={{ animationPlayState: isRefreshing ? 'running' : 'paused' }}>
+                  <div className={`spinning-vinyl-outer ${isRefreshing ? 'running' : 'paused'}`}>
                     <div className="spinning-vinyl-grooves"></div>
                     <div className="spinning-vinyl-grooves-2"></div>
                     <div className="spinning-vinyl-center">
                       <div className="spinning-vinyl-hole"></div>
                     </div>
                   </div>
-                  <svg className="spinning-vinyl-needle" style={{ transform: isRefreshing ? 'rotate(35deg)' : 'rotate(15deg)' }} viewBox="0 0 100 100">
+                  <svg className={`spinning-vinyl-needle ${isRefreshing ? 'refreshing' : ''}`} viewBox="0 0 100 100">
                     <path d="M70 20 L40 65 L45 70" stroke="var(--text-muted)" strokeWidth="3" fill="none" strokeLinecap="round" />
                     <rect x="36" y="65" width="10" height="15" rx="2" fill="var(--primary)" transform="rotate(-30 41 72)" />
                   </svg>
@@ -558,14 +587,14 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                 <button 
                   type="button" 
                   className="btn-accent" 
-                  onClick={handleRefreshStore}
+                  onClick={actualizarTienda}
                   disabled={isRefreshing}
                 >
                   {isRefreshing ? 'Actualizando catálogo...' : '🔄 Comprobar Novedades'}
                 </button>
               </div>
             ) : filteredVinyls.length === 0 ? (
-              <div className="empty-store-container fade-in" style={{ padding: '3rem 2rem' }}>
+              <div className="empty-store-container fade-in compact">
                 <h2 className="empty-store-title">Sin resultados</h2>
                 <p className="empty-store-text">
                   No hemos encontrado ningún vinilo que coincida con tus filtros actuales o tu criterio de búsqueda.
@@ -587,7 +616,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                       {vinyl.portada ? (
                         <img src={vinyl.portada} alt={vinyl.titulo} className="vinyl-cover-img" />
                       ) : (
-                        <div style={{ fontSize: '4.5rem', userSelect: 'none' }}>💿</div>
+                        <div className="fallback-cover-large">💿</div>
                       )}
                     </div>
                     
@@ -610,7 +639,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                       <button 
                         type="button" 
                         className="btn-add-cart" 
-                        onClick={() => addToCart(vinyl)}
+                        onClick={() => agregarAlCarrito(vinyl)}
                         disabled={vinyl.stock <= 0}
                       >
                         {vinyl.stock <= 0 ? 'Agotado' : '🛒 Añadir'}
@@ -630,9 +659,9 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
             </div>
             
             {loadingOrders ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
-                <div className="spinning-vinyl-wrapper" style={{ width: '80px', height: '80px' }}>
-                  <div className="spinning-vinyl-outer" style={{ animationPlayState: 'running' }}>
+              <div className="flex-center-padded">
+                <div className="spinning-vinyl-wrapper small">
+                  <div className="spinning-vinyl-outer running">
                     <div className="spinning-vinyl-grooves"></div>
                     <div className="spinning-vinyl-grooves-2"></div>
                     <div className="spinning-vinyl-center">
@@ -650,9 +679,8 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                 </p>
                 <button 
                   type="button" 
-                  className="btn-secondary-outline" 
+                  className="btn-secondary-outline btn-width-limit" 
                   onClick={() => setActiveView('store')}
-                  style={{ maxWidth: '200px' }}
                 >
                   Ir a la Tienda
                 </button>
@@ -683,7 +711,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                           <span className="order-meta-label">Total</span>
                           <span className="order-meta-value">{parseFloat(order.importeTotal).toFixed(2)} €</span>
                         </div>
-                        <div className="order-header-meta" style={{ minWidth: '120px' }}>
+                        <div className="order-header-meta order-header-meta-wide">
                           <span className="order-meta-label">Estado</span>
                           <span className={`order-status-badge ${order.estado.toLowerCase()}`}>
                             {order.estado}
@@ -703,7 +731,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                                   {detail.vinilo && detail.vinilo.portada ? (
                                     <img src={detail.vinilo.portada} alt={detail.vinilo.titulo} />
                                   ) : (
-                                    <div style={{ fontSize: '1.5rem' }}>💿</div>
+                                    <div className="fallback-cover-small">💿</div>
                                   )}
                                 </div>
                                 <div className="order-item-details">
@@ -746,10 +774,10 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                 <p className="profile-card-subtitle">Administra y actualiza la información de tu perfil de VinyLab</p>
               </div>
 
-              {profileError && <div className="error-message fade-in" style={{ marginBottom: '1.5rem' }}>{profileError}</div>}
-              {profileSuccess && <div className="success-message fade-in" style={{ marginBottom: '1.5rem' }}>{profileSuccess}</div>}
+              {profileError && <div className="error-message fade-in spaced-error">{profileError}</div>}
+              {profileSuccess && <div className="success-message fade-in spaced-success">{profileSuccess}</div>}
 
-              <form onSubmit={handleProfileSubmit}>
+              <form onSubmit={enviarPerfil}>
                 <div className="form-group">
                   <label className="form-label" htmlFor="profile-nombre">Nombre Completo</label>
                   <input
@@ -759,7 +787,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                     className="form-input"
                     placeholder="Tu nombre completo"
                     value={profileData.nombre}
-                    onChange={handleProfileChange}
+                    onChange={cambioPerfil}
                     required
                   />
                 </div>
@@ -770,8 +798,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                     <input
                       type="email"
                       id="profile-email"
-                      className="form-input"
-                      style={{ paddingRight: '6.5rem', opacity: 0.7 }}
+                      className="form-input locked-input"
                       value={profileData.email}
                       disabled
                     />
@@ -788,7 +815,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                     className="form-input"
                     placeholder="Tu dirección de envío física"
                     value={profileData.direccion}
-                    onChange={handleProfileChange}
+                    onChange={cambioPerfil}
                   />
                 </div>
 
@@ -801,7 +828,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                     className="form-input"
                     placeholder="•••••••• (dejar en blanco para no cambiar)"
                     value={profileData.contrasena}
-                    onChange={handleProfileChange}
+                    onChange={cambioPerfil}
                   />
                 </div>
 
@@ -816,8 +843,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                     </button>
                     <button 
                       type="submit" 
-                      className="btn-primary" 
-                      style={{ flex: 1, marginTop: 0 }}
+                      className="btn-primary btn-flex-no-margin" 
                       disabled={savingProfile}
                     >
                       {savingProfile ? 'Guardando...' : 'Guardar Cambios'}
@@ -827,7 +853,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                   <button 
                     type="button" 
                     className="profile-logout-btn"
-                    onClick={handleLogout}
+                    onClick={cierreSesion}
                   >
                     Cerrar Sesión
                   </button>
@@ -873,7 +899,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                       {item.portada ? (
                         <img src={item.portada} alt={item.titulo} />
                       ) : (
-                        <div style={{ fontSize: '2rem' }}>💿</div>
+                        <div className="fallback-cover-medium">💿</div>
                       )}
                     </div>
                     
@@ -887,7 +913,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                       <button 
                         type="button" 
                         className="btn-remove-item"
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => eliminarDelCarrito(item.id)}
                         title="Eliminar producto"
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -900,7 +926,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                         <button 
                           type="button" 
                           className="qty-btn"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1, item.stock)}
+                          onClick={() => actualizarCantidad(item.id, item.quantity - 1, item.stock)}
                           disabled={item.quantity <= 1}
                         >
                           -
@@ -909,7 +935,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                         <button 
                           type="button" 
                           className="qty-btn"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1, item.stock)}
+                          onClick={() => actualizarCantidad(item.id, item.quantity + 1, item.stock)}
                           disabled={item.quantity >= item.stock}
                         >
                           +
@@ -930,7 +956,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                 <button 
                   type="button" 
                   className="btn-checkout"
-                  onClick={openPaymentGateway}
+                  onClick={abrirPasarelaPago}
                 >
                   Completar Compra
                 </button>
@@ -952,8 +978,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                     <path className="success-checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
                   </svg>
                 </div>
-                <h2>¡Pago Procesado con Éxito!</h2>
-                <p>Tu pedido ha sido creado y el stock de vinilos actualizado. Redirigiendo a tu historial...</p>
+                <h2>¡Pago exitoso!</h2>
               </div>
             ) : (
               <div className="payment-modal-body">
@@ -974,16 +999,31 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                   <div className="payment-card-preview-col">
                     <h3>Resumen de Pago</h3>
 
+                    {/* Breakdown with details of the order */}
+                    <div className="payment-order-details">
+                      {cart.map(item => (
+                        <div key={item.id} className="payment-detail-item">
+                          <div className="payment-detail-cover">
+                            {item.portada ? (
+                              <img src={item.portada} alt={item.titulo} />
+                            ) : (
+                              <div className="payment-detail-fallback-cover">💿</div>
+                            )}
+                          </div>
+                          <div className="payment-detail-info">
+                            <h4 className="payment-detail-title" title={item.titulo}>{item.titulo}</h4>
+                            <p className="payment-detail-artist-qty">
+                              {item.artista ? item.artista.nombre : 'Artista'} • Cantidad: {item.quantity}
+                            </p>
+                          </div>
+                          <div className="payment-detail-subtotal">
+                            {(parseFloat(item.precio) * item.quantity).toFixed(2)} €
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
                     <div className="payment-summary-box">
-                      <div className="summary-row">
-                        <span>Subtotal de Vinilos:</span>
-                        <span>{cartTotal.toFixed(2)} €</span>
-                      </div>
-                      <div className="summary-row">
-                        <span>Envío Asegurado:</span>
-                        <span className="free-shipping">¡GRATIS!</span>
-                      </div>
-                      <div className="summary-divider"></div>
                       <div className="summary-row total">
                         <span>Total a Pagar:</span>
                         <span>{cartTotal.toFixed(2)} €</span>
@@ -992,8 +1032,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                   </div>
 
                   <div className="payment-form-col">
-                    <h2>Método de Pago</h2>
-                    <p className="payment-subtitle">Ingresa la información de tu tarjeta de crédito o débito segura para completar el pedido.</p>
+                    <h2>Introduce tu tarjeta</h2>
 
                     {paymentError && (
                       <div className="error-message payment-error-alert fade-in">
@@ -1001,7 +1040,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                       </div>
                     )}
 
-                    <form onSubmit={handlePaymentSubmit}>
+                    <form onSubmit={enviarPago}>
                       <div className="form-group">
                         <label className="form-label" htmlFor="card-nombre">Nombre del Titular</label>
                         <input
@@ -1011,7 +1050,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                           className="form-input"
                           placeholder=""
                           value={paymentData.nombre}
-                          onChange={handlePaymentInputChange}
+                          onChange={cambioInputPago}
                           disabled={isProcessingPayment}
                           required
                         />
@@ -1026,7 +1065,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                           className="form-input card-num-input"
                           placeholder=""
                           value={paymentData.numero}
-                          onChange={handlePaymentInputChange}
+                          onChange={cambioInputPago}
                           disabled={isProcessingPayment}
                           required
                         />
@@ -1042,7 +1081,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                             className="form-input"
                             placeholder="MM/YY"
                             value={paymentData.expiracion}
-                            onChange={handlePaymentInputChange}
+                            onChange={cambioInputPago}
                             disabled={isProcessingPayment}
                             required
                           />
@@ -1057,7 +1096,7 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
                             className="form-input"
                             placeholder="•••"
                             value={paymentData.cvv}
-                            onChange={handlePaymentInputChange}
+                            onChange={cambioInputPago}
                             disabled={isProcessingPayment}
                             required
                           />
@@ -1100,4 +1139,4 @@ const StoreLayout = ({ toggleTheme, isDarkMode }) => {
   );
 };
 
-export default StoreLayout;
+export default Tienda;

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { fetchApi } from '../utils/api';
 
-const ImageUploadField = ({ value, onChange, label, required }) => {
+const SubirImagen = ({ value, onChange, label, required }) => {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef(null);
 
-  const handleFile = (file) => {
+  const archivo = (file) => {
     if (!file) return;
     
     if (!file.type.startsWith('image/')) {
@@ -20,7 +20,7 @@ const ImageUploadField = ({ value, onChange, label, required }) => {
     reader.readAsDataURL(file);
   };
 
-  const handleDrag = (e) => {
+  const arrastrar = (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") {
@@ -30,29 +30,29 @@ const ImageUploadField = ({ value, onChange, label, required }) => {
     }
   };
 
-  const handleDrop = (e) => {
+  const soltar = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
+      archivo(e.dataTransfer.files[0]);
     }
   };
 
-  const handleFileChange = (e) => {
+  const modificarArchivo = (e) => {
     if (e.target.files && e.target.files[0]) {
-      handleFile(e.target.files[0]);
+      archivo(e.target.files[0]);
     }
   };
 
-  const handleRemove = () => {
+  const borrar = () => {
     onChange('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  const getImageSizeText = () => {
+  const obtenerTamanoImagen = () => {
     if (!value) return '';
     if (value.startsWith('http')) return 'Imagen remota (URL)';
     const bytes = Math.round((value.length * 3) / 4);
@@ -68,18 +68,18 @@ const ImageUploadField = ({ value, onChange, label, required }) => {
       <div className="image-input-container">
         <div 
           className={`image-dropzone ${dragActive ? 'drag-active' : ''}`}
-          onDragEnter={handleDrag}
-          onDragOver={handleDrag}
-          onDragLeave={handleDrag}
-          onDrop={handleDrop}
+          onDragEnter={arrastrar}
+          onDragOver={arrastrar}
+          onDragLeave={arrastrar}
+          onDrop={soltar}
           onClick={() => fileInputRef.current?.click()}
         >
           <input
             type="file"
             ref={fileInputRef}
-            style={{ display: 'none' }}
+            className="file-input-hidden"
             accept="image/*"
-            onChange={handleFileChange}
+            onChange={modificarArchivo}
           />
           <span className="dropzone-icon">🖼️</span>
           <span className="dropzone-text">Arrastra una imagen aquí o haz clic para buscar</span>
@@ -95,11 +95,11 @@ const ImageUploadField = ({ value, onChange, label, required }) => {
               <div className="image-preview-title" title={value.startsWith('data:') ? 'Imagen en Base64' : value}>
                 {value.startsWith('data:') ? 'Imagen cargada localmente' : value}
               </div>
-              <div className="image-preview-size">{getImageSizeText()}</div>
+              <div className="image-preview-size">{obtenerTamanoImagen()}</div>
               <button 
                 type="button" 
                 className="btn-remove-image" 
-                onClick={handleRemove}
+                onClick={borrar}
               >
                 Eliminar Portada
               </button>
@@ -111,14 +111,14 @@ const ImageUploadField = ({ value, onChange, label, required }) => {
   );
 };
 
-const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRender }) => {
+const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRender }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
   const [expandedRows, setExpandedRows] = useState({});
 
-  const toggleRowExpand = (id) => {
+  const alternarExpansionFila = (id) => {
     setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
   };
   
@@ -127,7 +127,7 @@ const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRende
   const [formData, setFormData] = useState({});
   const [selectOptions, setSelectOptions] = useState({});
 
-  const loadData = async () => {
+  const cargarDatos = async () => {
     setLoading(true);
     try {
       const result = await fetchApi(`/${endpoint}`);
@@ -141,7 +141,7 @@ const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRende
   };
 
   useEffect(() => {
-    loadData();
+    cargarDatos();
 
     // Establecer conexión SSE para sincronización en tiempo real de la tabla
     const eventSource = new EventSource('http://localhost:3000/realtime/sse');
@@ -153,7 +153,7 @@ const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRende
 
         // Comprobar si el tipo de evento coincide con el recurso de la tabla actual (ej. 'vinilo_')
         if (type.startsWith(`${endpoint}_`)) {
-          console.log(`CrudTable [${endpoint}] recibió evento en tiempo real:`, type, data);
+          console.log(`TablaCrud [${endpoint}] recibió evento en tiempo real:`, type, data);
           
           if (type === `${endpoint}_created`) {
             setData(prev => {
@@ -168,12 +168,12 @@ const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRende
           }
         }
       } catch (err) {
-        console.error(`Error al procesar evento SSE en CrudTable [${endpoint}]:`, err);
+        console.error(`Error al procesar evento SSE en TablaCrud [${endpoint}]:`, err);
       }
     };
 
     eventSource.onerror = (err) => {
-      console.error(`Error en la conexión SSE de CrudTable [${endpoint}]. Reconectando...`, err);
+      console.error(`Error en la conexión SSE de TablaCrud [${endpoint}]. Reconectando...`, err);
       eventSource.close();
     };
 
@@ -200,7 +200,7 @@ const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRende
     fetchOptions();
   }, [columns]);
 
-  const handleOpenModal = (item = null) => {
+  const abrirModal = (item = null) => {
     if (item) {
       setEditingId(item.id);
       setFormData(item);
@@ -211,13 +211,13 @@ const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRende
     setIsModalOpen(true);
   };
 
-  const handleCloseModal = () => {
+  const cerrarModal = () => {
     setIsModalOpen(false);
     setEditingId(null);
     setFormData({});
   };
 
-  const handleChange = (e) => {
+  const cambioInput = (e) => {
     const { name, value, type } = e.target;
     let parsedValue = value;
     
@@ -232,7 +232,7 @@ const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRende
     setFormData(prev => ({ ...prev, [name]: parsedValue }));
   };
 
-  const handleSubmit = async (e) => {
+  const enviarFormulario = async (e) => {
     e.preventDefault();
     try {
       // Remove relationships or complex nested objects before sending
@@ -257,20 +257,20 @@ const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRende
           body: JSON.stringify(payload),
         });
       }
-      handleCloseModal();
-      loadData();
+      cerrarModal();
+      cargarDatos();
     } catch (err) {
       alert(`Error: ${err.message}`);
     }
   };
 
-  const handleDelete = async (id) => {
+  const eliminarRegistro = async (id) => {
     if (window.confirm(`¿Estás seguro de que deseas eliminar este registro?`)) {
       try {
         await fetchApi(`/${endpoint}/${id}`, {
           method: 'DELETE',
         });
-        loadData();
+        cargarDatos();
       } catch (err) {
         alert(`Error al eliminar: ${err.message}`);
       }
@@ -282,22 +282,22 @@ const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRende
       <div className="admin-header">
         <h1>{title}</h1>
         {canAdd && (
-          <button className="btn-primary" style={{ width: 'auto', marginTop: 0 }} onClick={() => handleOpenModal()}>
+          <button className="btn-primary btn-add-new" onClick={() => abrirModal()}>
             + Agregar Nuevo
           </button>
         )}
       </div>
 
-      {error && <div className="error-message" style={{marginBottom: '1rem'}}>{error}</div>}
+      {error && <div className="error-message spaced-error">{error}</div>}
 
       <div className="crud-table-container">
         {loading ? (
-          <div style={{ padding: '2rem', textAlign: 'center' }}>Cargando datos...</div>
+          <div className="loading-message">Cargando datos...</div>
         ) : (
           <table className="crud-table">
             <thead>
               <tr>
-                {expandableRowRender && <th style={{ width: '60px', textAlign: 'center' }}>Detalle</th>}
+                {expandableRowRender && <th className="th-detail">Detalle</th>}
                 {columns.map(col => (
                   <th key={col.key}>{col.label}</th>
                 ))}
@@ -309,11 +309,11 @@ const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRende
                 <React.Fragment key={row.id}>
                   <tr>
                     {expandableRowRender && (
-                      <td style={{ textAlign: 'center' }}>
+                      <td className="td-center">
                         <button
                           type="button"
                           className="btn-expand"
-                          onClick={() => toggleRowExpand(row.id)}
+                          onClick={() => alternarExpansionFila(row.id)}
                           title={expandedRows[row.id] ? "Contraer detalles" : "Expandir detalles"}
                         >
                           {expandedRows[row.id] ? '▼' : '▶'}
@@ -334,10 +334,10 @@ const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRende
                     })}
                     <td>
                       <div className="table-actions">
-                        <button className="btn-icon" onClick={() => handleOpenModal(row)}>
+                        <button className="btn-icon" onClick={() => abrirModal(row)}>
                           ✏️
                         </button>
-                        <button className="btn-icon delete" onClick={() => handleDelete(row.id)}>
+                        <button className="btn-icon delete" onClick={() => eliminarRegistro(row.id)}>
                           🗑️
                         </button>
                       </div>
@@ -356,7 +356,7 @@ const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRende
               ))}
               {data.length === 0 && (
                 <tr>
-                  <td colSpan={columns.length + (expandableRowRender ? 2 : 1)} style={{ textAlign: 'center' }}>
+                  <td colSpan={columns.length + (expandableRowRender ? 2 : 1)} className="td-center">
                     No hay registros
                   </td>
                 </tr>
@@ -371,17 +371,17 @@ const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRende
           <div className="modal-content">
             <div className="modal-header">
               <h3>{editingId ? 'Editar' : 'Agregar'} {title}</h3>
-              <button className="modal-close" onClick={handleCloseModal}>&times;</button>
+              <button className="modal-close" onClick={cerrarModal}>&times;</button>
             </div>
             <div className="modal-body">
-              <form id="crud-form" onSubmit={handleSubmit}>
+              <form id="crud-form" onSubmit={enviarFormulario}>
                 {columns.map(col => {
                   if (col.key === 'id' && !editingId) return null; // usually auto-increment
                   if (col.hideInForm) return null;
                   
                   if (col.type === 'image') {
                     return (
-                      <ImageUploadField
+                      <SubirImagen
                         key={col.key}
                         label={col.label}
                         value={formData[col.key] || ''}
@@ -399,7 +399,7 @@ const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRende
                           name={col.key}
                           className="form-input"
                           value={formData[col.key] !== undefined ? formData[col.key] : ''}
-                          onChange={handleChange}
+                          onChange={cambioInput}
                           disabled={col.key === 'id'}
                           required={col.required !== false && col.key !== 'id'}
                         >
@@ -423,7 +423,7 @@ const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRende
                           type="checkbox"
                           name={col.key}
                           checked={formData[col.key] || false}
-                          onChange={handleChange}
+                          onChange={cambioInput}
                         />
                       ) : (
                         <input
@@ -431,7 +431,7 @@ const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRende
                           name={col.key}
                           className="form-input"
                           value={formData[col.key] !== undefined ? formData[col.key] : ''}
-                          onChange={handleChange}
+                          onChange={cambioInput}
                           disabled={col.key === 'id'}
                           required={col.required !== false && col.key !== 'id'}
                         />
@@ -442,8 +442,8 @@ const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRende
               </form>
             </div>
             <div className="modal-footer">
-              <button className="btn-secondary" onClick={handleCloseModal}>Cancelar</button>
-              <button type="submit" form="crud-form" className="btn-primary" style={{ width: 'auto', marginTop: 0 }}>
+              <button className="btn-secondary" onClick={cerrarModal}>Cancelar</button>
+              <button type="submit" form="crud-form" className="btn-primary btn-modal-save">
                 Guardar
               </button>
             </div>
@@ -454,4 +454,4 @@ const CrudTable = ({ endpoint, columns, title, canAdd = true, expandableRowRende
   );
 };
 
-export default CrudTable;
+export default TablaCrud;

@@ -613,3 +613,65 @@
   font-style: italic;
 }
 
+/* Contenedores de columnas de administración */
+.admin-column-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+/* Clases de utilidad para tabla */
+.col-cover {
+  width: 60px;
+}
+
+.table-portada-preview-small {
+  width: 40px;
+  height: 40px;
+}
+
+.table-portada-fallback-small {
+  font-size: 1rem;
+}
+
+.admin-sidebar-theme-btn {
+  margin-bottom: 0.5rem;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+.btn-add-new {
+  width: auto;
+  margin-top: 0;
+}
+
+.spaced-error {
+  margin-bottom: 1rem;
+}
+
+.loading-message {
+  padding: 2rem;
+  text-align: center;
+}
+
+.th-detail {
+  width: 60px;
+  text-align: center;
+}
+
+.td-center {
+  text-align: center;
+}
+
+.btn-modal-save {
+  width: auto;
+  margin-top: 0;
+}
+

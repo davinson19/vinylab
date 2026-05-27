@@ -268,6 +268,10 @@
   background-repeat: no-repeat;
   transition: all 0.3s ease;
   z-index: 1;
+  background-image: 
+    linear-gradient(to bottom, rgba(var(--banner-bg-rgb), 0.25) 0%, rgba(var(--banner-bg-rgb), 0.7) 75%, var(--banner-bg) 100%), 
+    linear-gradient(to right, var(--banner-bg) 0%, rgba(var(--banner-bg-rgb), 0.2) 20%, rgba(var(--banner-bg-rgb), 0.2) 80%, var(--banner-bg) 100%), 
+    var(--welcome-banner-url);
 }
 
 .light-mode .store-welcome-banner-full {
@@ -1575,6 +1579,109 @@
   margin: 0.25rem 0;
 }
 
+/* Payment Order Details Breakdown */
+.payment-order-details {
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-right: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Scrollbar styling for a premium feel */
+.payment-order-details::-webkit-scrollbar {
+  width: 6px;
+}
+
+.payment-order-details::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.payment-order-details::-webkit-scrollbar-thumb {
+  background: var(--surface-border);
+  border-radius: 4px;
+}
+
+.payment-order-details::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+.payment-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.light-mode .payment-detail-item {
+  background: rgba(0, 0, 0, 0.01);
+}
+
+.payment-detail-item:hover {
+  border-color: var(--primary);
+  background: rgba(204, 164, 4, 0.03);
+}
+
+.payment-detail-cover {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, #1a1a1a 0%, #050505 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.payment-detail-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.payment-detail-fallback-cover {
+  font-size: 1.1rem;
+}
+
+.payment-detail-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.payment-detail-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.payment-detail-artist-qty {
+  margin: 0.15rem 0 0 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.payment-detail-subtotal {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
 /* Right Column: Form */
 .payment-form-col h2 {
   font-size: 1.75rem;
@@ -1783,6 +1890,78 @@
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* Nuevas utilidades de la tienda */
+.nav-btn-relative {
+  position: relative;
+}
+
+.spinning-vinyl-container {
+  display: flex;
+  justify-content: center;
+  padding: 5rem;
+}
+
+.spinning-vinyl-outer.running {
+  animation-play-state: running;
+}
+
+.spinning-vinyl-outer.paused {
+  animation-play-state: paused;
+}
+
+.spinning-vinyl-needle.refreshing {
+  transform: rotate(35deg);
+}
+
+.empty-store-container.compact {
+  padding: 3rem 2rem;
+}
+
+.fallback-cover-large {
+  font-size: 4.5rem;
+  user-select: none;
+}
+
+.flex-center-padded {
+  display: flex;
+  justify-content: center;
+  padding: 4rem;
+}
+
+.spinning-vinyl-wrapper.small {
+  width: 80px;
+  height: 80px;
+}
+
+.btn-width-limit {
+  max-width: 200px;
+}
+
+.order-header-meta-wide {
+  min-width: 120px;
+}
+
+.fallback-cover-small {
+  font-size: 1.5rem;
+}
+
+.spaced-error {
+  margin-bottom: 1.5rem;
+}
+
+.spaced-success {
+  margin-bottom: 1.5rem;
+}
+
+.btn-flex-no-margin {
+  flex: 1;
+  margin-top: 0;
+}
+
+.fallback-cover-medium {
+  font-size: 2rem;
 }
 
 

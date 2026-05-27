@@ -23,7 +23,7 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
     rolId: 2, // Default to client
   });
 
-  const handleChange = (e) => {
+  const manejarCambio = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -31,7 +31,7 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const manejarEnvio = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -93,7 +93,7 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
     }
   };
 
-  const toggleAuthMode = () => {
+  const alternarModo = () => {
     setIsLogin(!isLogin);
     setError('');
     setSuccess('');
@@ -104,25 +104,7 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
       <button
         type="button"
         onClick={toggleTheme}
-        style={{
-          position: 'fixed',
-          top: '1.5rem',
-          right: '1.5rem',
-          background: 'var(--surface)',
-          border: '1px solid var(--surface-border)',
-          borderRadius: '50%',
-          width: '40px',
-          height: '40px',
-          color: 'var(--text)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 100,
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-        }}
+        className="btn-fixed-theme-toggle"
         title={isDarkMode ? 'Cambiar a Modo Día' : 'Cambiar a Modo Noche'}
       >
         {isDarkMode ? (
@@ -152,7 +134,7 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
         {error && <div className="error-message fade-in">{error}</div>}
         {success && <div className="success-message fade-in">{success}</div>}
 
-        <form onSubmit={handleSubmit} className="fade-in" key={isLogin ? 'login' : 'register'}>
+        <form onSubmit={manejarEnvio} className="fade-in" key={isLogin ? 'login' : 'register'}>
           {!isLogin && (
             <div className="form-group">
               <label className="form-label" htmlFor="nombre">Nombre</label>
@@ -163,7 +145,7 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
                 className="form-input"
                 placeholder="Tu nombre completo"
                 value={formData.nombre}
-                onChange={handleChange}
+                onChange={manejarCambio}
                 required={!isLogin}
               />
             </div>
@@ -178,7 +160,7 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
               className="form-input"
               placeholder="correo@ejemplo.com"
               value={formData.email}
-              onChange={handleChange}
+              onChange={manejarCambio}
               required
             />
           </div>
@@ -192,7 +174,7 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
               className="form-input"
               placeholder="••••••••"
               value={formData.contrasena}
-              onChange={handleChange}
+              onChange={manejarCambio}
               required
             />
           </div>
@@ -207,7 +189,7 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
                 className="form-input"
                 placeholder="Tu dirección de envío"
                 value={formData.direccion}
-                onChange={handleChange}
+                onChange={manejarCambio}
               />
             </div>
           )}
@@ -219,7 +201,7 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
 
         <div className="auth-toggle">
           {isLogin ? '¿No tienes una cuenta? ' : '¿Ya tienes una cuenta? '}
-          <button type="button" onClick={toggleAuthMode} className="auth-toggle-link">
+          <button type="button" onClick={alternarModo} className="auth-toggle-link">
             {isLogin ? 'Regístrate aquí' : 'Inicia sesión'}
           </button>
         </div>

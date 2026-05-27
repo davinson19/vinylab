@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import CrudTable from './CrudTable';
+import TablaCrud from './TablaCrud';
 
-const AdminPanel = ({ toggleTheme, isDarkMode }) => {
+const PanelControl = ({ toggleTheme, isDarkMode }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('usuarios');
 
-  const handleLogout = () => {
+  const cierreSesion = () => {
     localStorage.removeItem('token');
     navigate('/');
   };
@@ -17,7 +17,7 @@ const AdminPanel = ({ toggleTheme, isDarkMode }) => {
     { id: 'pedidos', label: 'Pedidos' },
   ];
 
-  const getTableConfig = () => {
+  const obtenerConfiguracionTabla = () => {
     switch (activeTab) {
       case 'usuarios':
         return {
@@ -36,11 +36,11 @@ const AdminPanel = ({ toggleTheme, isDarkMode }) => {
     }
   };
 
-  const config = getTableConfig();
+  const config = obtenerConfiguracionTabla();
 
-  const renderCatalogo = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-      <CrudTable 
+  const mostrarCatalogo = () => (
+    <div className="admin-column-layout">
+      <TablaCrud 
         endpoint="vinilo"
         title="Vinilos"
         columns={[
@@ -68,7 +68,7 @@ const AdminPanel = ({ toggleTheme, isDarkMode }) => {
           { key: 'artistaId', label: 'Artista', type: 'select', selectEndpoint: 'artista', optionLabel: 'nombre', render: (row) => row.artista ? row.artista.nombre : row.artistaId },
         ]}
       />
-      <CrudTable 
+      <TablaCrud 
         endpoint="categoria"
         title="Categorías"
         columns={[
@@ -76,7 +76,7 @@ const AdminPanel = ({ toggleTheme, isDarkMode }) => {
           { key: 'nombre', label: 'Nombre' },
         ]}
       />
-      <CrudTable 
+      <TablaCrud 
         endpoint="artista"
         title="Artistas"
         columns={[
@@ -87,9 +87,9 @@ const AdminPanel = ({ toggleTheme, isDarkMode }) => {
     </div>
   );
 
-  const renderPedidos = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-      <CrudTable 
+  const mostrarPedidos = () => (
+    <div className="admin-column-layout">
+      <TablaCrud 
         endpoint="pedido"
         title="Pedidos"
         canAdd={false}
@@ -110,7 +110,7 @@ const AdminPanel = ({ toggleTheme, isDarkMode }) => {
               <table className="pedido-details-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '60px' }}>Portada</th>
+                    <th className="col-cover">Portada</th>
                     <th>Vinilo</th>
                     <th>Artista</th>
                     <th>Precio Unitario</th>
@@ -126,11 +126,11 @@ const AdminPanel = ({ toggleTheme, isDarkMode }) => {
                     return (
                       <tr key={item.id}>
                         <td>
-                          <div className="table-portada-preview" style={{ width: '40px', height: '40px' }}>
+                          <div className="table-portada-preview table-portada-preview-small">
                             {vinilo.portada ? (
-                              <img src={vinilo.portada} alt={vinilo.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              <img src={vinilo.portada} alt={vinilo.titulo} />
                             ) : (
-                              <div className="table-portada-fallback" style={{ fontSize: '1rem' }}>💿</div>
+                              <div className="table-portada-fallback table-portada-fallback-small">💿</div>
                             )}
                           </div>
                         </td>
@@ -170,9 +170,8 @@ const AdminPanel = ({ toggleTheme, isDarkMode }) => {
         </div>
         <div className="admin-sidebar-footer">
           <button 
-            className="admin-menu-btn" 
+            className="admin-menu-btn admin-sidebar-theme-btn" 
             onClick={toggleTheme}
-            style={{ marginBottom: '0.5rem', width: '100%', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             title={isDarkMode ? 'Cambiar a Modo Día' : 'Cambiar a Modo Noche'}
           >
             {isDarkMode ? (
@@ -193,7 +192,7 @@ const AdminPanel = ({ toggleTheme, isDarkMode }) => {
               </svg>
             )}
           </button>
-          <button className="admin-logout-btn" onClick={handleLogout}>
+          <button className="admin-logout-btn" onClick={cierreSesion}>
             Cerrar Sesión
           </button>
         </div>
@@ -201,12 +200,12 @@ const AdminPanel = ({ toggleTheme, isDarkMode }) => {
       <div className="admin-content">
         
         {activeTab === 'catalogo' ? (
-          renderCatalogo()
+          mostrarCatalogo()
         ) : activeTab === 'pedidos' ? (
-          renderPedidos()
+          mostrarPedidos()
         ) : (
           config && (
-            <CrudTable 
+            <TablaCrud 
               key={config.endpoint} // reset state on tab change
               endpoint={config.endpoint}
               columns={config.columns}
@@ -220,4 +219,4 @@ const AdminPanel = ({ toggleTheme, isDarkMode }) => {
   );
 };
 
-export default AdminPanel;
+export default PanelControl;
