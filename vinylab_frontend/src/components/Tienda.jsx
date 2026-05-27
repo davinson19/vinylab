@@ -13,6 +13,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Profile Form States
   const [profileData, setProfileData] = useState({
@@ -375,7 +376,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
     <div className="store-layout fade-in">
       {/* Header/Navbar */}
       <header className="store-navbar">
-        <button className="store-brand" onClick={() => setActiveView('store')} title="Ir a la tienda">
+        <button className="store-brand" onClick={() => { setActiveView('store'); setIsMobileMenuOpen(false); }} title="Ir a la tienda">
           <img src={logo} alt="VinyLab Logo" className="store-logo" />
           <span className="store-title">VinyLab</span>
         </button>
@@ -385,7 +386,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
           <button
             type="button"
             className="nav-btn nav-btn-relative"
-            onClick={() => setIsCartOpen(true)}
+            onClick={() => { setIsCartOpen(true); setIsMobileMenuOpen(false); }}
             title="Ver Carrito de Compras"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -398,81 +399,208 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
             )}
           </button>
 
-          {/* Theme Toggler */}
-          <button
-            type="button"
-            className="nav-btn"
-            onClick={toggleTheme}
-            title={isDarkMode ? 'Cambiar a Modo Día' : 'Cambiar a Modo Noche'}
-          >
-            {isDarkMode ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="5"></circle>
-                <line x1="12" y1="1" x2="12" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="23"></line>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                <line x1="1" y1="12" x2="3" y2="12"></line>
-                <line x1="21" y1="12" x2="23" y2="12"></line>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-              </svg>
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-              </svg>
-            )}
-          </button>
-
-          {/* User Icon & Dropdown */}
-          <div className="user-dropdown-container" ref={dropdownRef}>
-            <button 
-              className={`user-avatar-btn ${isDropdownOpen ? 'active' : ''}`}
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              title="Mi Cuenta"
+          {/* Desktop Only Actions */}
+          <div className="desktop-nav-actions">
+            {/* Theme Toggler */}
+            <button
+              type="button"
+              className="nav-btn"
+              onClick={toggleTheme}
+              title={isDarkMode ? 'Cambiar a Modo Día' : 'Cambiar a Modo Noche'}
             >
-              <svg className="user-avatar-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
+              {isDarkMode ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="5"></circle>
+                  <line x1="12" y1="1" x2="12" y2="3"></line>
+                  <line x1="12" y1="21" x2="12" y2="23"></line>
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                  <line x1="1" y1="12" x2="3" y2="12"></line>
+                  <line x1="21" y1="12" x2="23" y2="12"></line>
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+              )}
             </button>
 
-            {isDropdownOpen && (
-              <div className="user-dropdown-menu">
-                <div className="dropdown-user-info">
-                  <div className="dropdown-user-name">
-                    {loadingUser ? 'Cargando...' : user ? user.nombre : 'Cliente VinyLab'}
+            {/* User Icon & Dropdown */}
+            <div className="user-dropdown-container" ref={dropdownRef}>
+              <button 
+                className={`user-avatar-btn ${isDropdownOpen ? 'active' : ''}`}
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                title="Mi Cuenta"
+              >
+                <svg className="user-avatar-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </button>
+
+              {isDropdownOpen && (
+                <div className="user-dropdown-menu">
+                  <div className="dropdown-user-info">
+                    <div className="dropdown-user-name">
+                      {loadingUser ? 'Cargando...' : user ? user.nombre : 'Cliente VinyLab'}
+                    </div>
                   </div>
+                  
+                  <button 
+                    className={`dropdown-item ${activeView === 'orders' ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveView('orders');
+                      setIsDropdownOpen(false);
+                    }}
+                  >
+                    Historial de pedidos
+                  </button>
+
+                  <button 
+                    className={`dropdown-item ${activeView === 'profile' ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveView('profile');
+                      setIsDropdownOpen(false);
+                    }}
+                  >
+                    Configuración
+                  </button>
+
+                  <button 
+                    className="dropdown-item"
+                    onClick={toggleTheme}
+                    title={isDarkMode ? 'Cambiar a Modo Día' : 'Cambiar a Modo Noche'}
+                  >
+                    {isDarkMode ? (
+                      <>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                          <circle cx="12" cy="12" r="5"></circle>
+                          <line x1="12" y1="1" x2="12" y2="3"></line>
+                          <line x1="12" y1="21" x2="12" y2="23"></line>
+                          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                          <line x1="1" y1="12" x2="3" y2="12"></line>
+                          <line x1="21" y1="12" x2="23" y2="12"></line>
+                          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        Modo Día
+                      </>
+                    ) : (
+                      <>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                        Modo Noche
+                      </>
+                    )}
+                  </button>
+
+                  <div className="dropdown-divider"></div>
+
+                  <button className="dropdown-item logout" onClick={cierreSesion}>
+                    Cerrar Sesión
+                  </button>
                 </div>
-                
+              )}
+            </div>
+          </div>
+
+          {/* Hamburger Menu Button (Mobile) */}
+          <button
+            type="button"
+            className={`nav-btn hamburger-btn ${isMobileMenuOpen ? 'active' : ''}`}
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            title="Menú de Navegación"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {isMobileMenuOpen ? (
+                <>
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </>
+              ) : (
+                <>
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </>
+              )}
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile Menu Drawer Overlay */}
+      {isMobileMenuOpen && (
+        <div className="mobile-menu-overlay" onClick={() => setIsMobileMenuOpen(false)}>
+          <div className="mobile-menu-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="mobile-menu-header">
+              <h2 className="mobile-menu-title">Menú</h2>
+              <button 
+                type="button" 
+                className="btn-close-menu" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                title="Cerrar Menú"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            
+            <div className="mobile-menu-body">
+              <div className="mobile-user-name">
+                {loadingUser ? 'Cargando...' : user ? user.nombre : 'Cliente VinyLab'}
+              </div>
+
+              <div className="mobile-menu-items">
                 <button 
-                  className={`dropdown-item ${activeView === 'orders' ? 'active' : ''}`}
+                  className={`mobile-menu-item ${activeView === 'store' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveView('store');
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  Catálogo de Vinilos
+                </button>
+
+                <button 
+                  className={`mobile-menu-item ${activeView === 'orders' ? 'active' : ''}`}
                   onClick={() => {
                     setActiveView('orders');
-                    setIsDropdownOpen(false);
+                    setIsMobileMenuOpen(false);
                   }}
                 >
                   Historial de pedidos
                 </button>
 
                 <button 
-                  className={`dropdown-item ${activeView === 'profile' ? 'active' : ''}`}
+                  className={`mobile-menu-item ${activeView === 'profile' ? 'active' : ''}`}
                   onClick={() => {
                     setActiveView('profile');
-                    setIsDropdownOpen(false);
+                    setIsMobileMenuOpen(false);
                   }}
                 >
                   Configuración
                 </button>
 
-                <button 
-                  className="dropdown-item"
-                  onClick={toggleTheme}
-                  title={isDarkMode ? 'Cambiar a Modo Día' : 'Cambiar a Modo Noche'}
-                >
-                  {isDarkMode ? (
-                    <>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <div className="mobile-menu-divider"></div>
+
+                {/* Theme Toggle row inside mobile menu */}
+                <div className="mobile-theme-row">
+                  <span>Modo {isDarkMode ? 'Día' : 'Noche'}</span>
+                  <button
+                    type="button"
+                    className="nav-btn"
+                    onClick={toggleTheme}
+                    title={isDarkMode ? 'Cambiar a Modo Día' : 'Cambiar a Modo Noche'}
+                  >
+                    {isDarkMode ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="5"></circle>
                         <line x1="12" y1="1" x2="12" y2="3"></line>
                         <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -483,28 +611,24 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                         <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
                         <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                       </svg>
-                      Modo Día
-                    </>
-                  ) : (
-                    <>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                       </svg>
-                      Modo Noche
-                    </>
-                  )}
-                </button>
+                    )}
+                  </button>
+                </div>
 
-                <div className="dropdown-divider"></div>
+                <div className="mobile-menu-divider"></div>
 
-                <button className="dropdown-item logout" onClick={cierreSesion}>
+                <button className="mobile-menu-item logout" onClick={() => { cierreSesion(); setIsMobileMenuOpen(false); }}>
                   Cerrar Sesión
                 </button>
               </div>
-            )}
+            </div>
           </div>
         </div>
-      </header>
+      )}
 
       {activeView === 'store' && (
         <div 

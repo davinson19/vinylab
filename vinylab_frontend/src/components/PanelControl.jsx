@@ -5,6 +5,7 @@ import TablaCrud from './TablaCrud';
 const PanelControl = ({ toggleTheme, isDarkMode }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('usuarios');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const cierreSesion = () => {
     localStorage.removeItem('token');
@@ -153,16 +154,33 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
 
   return (
     <div className="admin-layout">
-      <div className="admin-sidebar">
+      {/* Mobile Sidebar Overlay Backdrop */}
+      {isSidebarOpen && (
+        <div className="admin-sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>
+      )}
+
+      <div className={`admin-sidebar ${isSidebarOpen ? 'open' : ''}`}>
         <div className="admin-sidebar-header">
           <h2>VinyLab</h2>
+          {/* Mobile Close Button in Sidebar */}
+          <button 
+            type="button" 
+            className="admin-sidebar-close-btn" 
+            onClick={() => setIsSidebarOpen(false)}
+            title="Cerrar menú"
+          >
+            &times;
+          </button>
         </div>
         <div className="admin-sidebar-menu">
           {tabs.map(tab => (
             <button
               key={tab.id}
               className={`admin-menu-btn ${activeTab === tab.id ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                setActiveTab(tab.id);
+                setIsSidebarOpen(false);
+              }}
             >
               {tab.label}
             </button>
@@ -192,13 +210,29 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
               </svg>
             )}
           </button>
-          <button className="admin-logout-btn" onClick={cierreSesion}>
+          <button className="admin-logout-btn" onClick={() => { cierreSesion(); setIsSidebarOpen(false); }}>
             Cerrar Sesión
           </button>
         </div>
       </div>
       <div className="admin-content">
-        
+        {/* Mobile Admin Header */}
+        <header className="admin-mobile-header">
+          <button 
+            type="button" 
+            className={`admin-hamburger-btn ${isSidebarOpen ? 'active' : ''}`}
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            title="Menú de Administración"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <span className="admin-mobile-title">VinyLab Admin</span>
+        </header>
+
         {activeTab === 'catalogo' ? (
           mostrarCatalogo()
         ) : activeTab === 'pedidos' ? (

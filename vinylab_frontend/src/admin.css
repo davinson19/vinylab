@@ -675,3 +675,166 @@
   margin-top: 0;
 }
 
+/* ==========================================================================
+   Admin Mobile Responsive Rules
+   ========================================================================== */
+
+/* Mobile header inside admin */
+.admin-mobile-header {
+  display: none;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: var(--surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--surface-border);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.admin-mobile-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+  color: var(--primary);
+}
+
+.admin-hamburger-btn {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.admin-sidebar-close-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0.25rem 0.5rem;
+}
+
+.admin-sidebar-close-btn:hover {
+  color: var(--error);
+}
+
+/* Mobile Sidebar overlay */
+.admin-sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 99;
+}
+
+/* Media Queries for Admin */
+@media (max-width: 768px) {
+  .admin-layout {
+    flex-direction: column;
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .admin-mobile-header {
+    display: flex;
+  }
+
+  /* Slide out sidebar from left */
+  .admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    bottom: 0;
+    width: 260px;
+    z-index: 100;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .admin-sidebar.open {
+    left: 0;
+  }
+
+  .admin-sidebar-close-btn {
+    display: block;
+  }
+
+  .admin-sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .admin-content {
+    padding: 1.5rem 1rem;
+    overflow-y: visible;
+  }
+
+  /* Enable Horizontal Scroll on CRUD Tables so they don't break layout */
+  .crud-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .crud-table {
+    min-width: 700px; /* Force minimum width to allow clean scrolling */
+  }
+
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .admin-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .btn-add-new {
+    width: 100%;
+  }
+
+  /* Expandable detailed tables scrolling */
+  .pedido-details-table {
+    min-width: 600px;
+  }
+
+  /* Columns container layout stacked */
+  .admin-column-layout {
+    gap: 2rem;
+  }
+
+  /* Responsive modal */
+  .modal-content {
+    width: 95%;
+    max-height: 85vh;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .modal-footer {
+    padding: 1rem;
+  }
+}
+
