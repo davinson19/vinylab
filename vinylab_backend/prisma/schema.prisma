@@ -29,7 +29,7 @@ model Usuario {
   direccion  String?
 
   // Un usuario pertenece a un rol
-  rol     Rol      @relation(fields: [rolId], references: [id])
+  rol     Rol      @relation(fields: [rolId], references: [id], onDelete: Cascade)
   // Un usuario puede hacer muchos pedidos
   pedidos Pedido[]
 }
@@ -63,9 +63,9 @@ model Vinilo {
   portada         String? // URL de la portada
 
   // Un vinilo pertenece a una categoría
-  categoria   Categoria    @relation(fields: [categoriaId], references: [id])
+  categoria   Categoria    @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
   // Un vinilo es de un artista
-  artista     Artista      @relation(fields: [artistaId], references: [id])
+  artista     Artista      @relation(fields: [artistaId], references: [id], onDelete: Cascade)
   // Un vinilo puede aparecer en múltiples pedidos
   pedidos DetallePedido[]
 }
@@ -75,7 +75,7 @@ model Pedido {
   id            Int      @id @default(autoincrement())
   usuarioId     Int
   importeTotal  Decimal  @db.Decimal(10, 2)
-  estado        String   @default("PAGADO") // Pagado, Enviado o Entregado
+  estado        String   @default("PENDIENTE_ENVIO") // PENDIENTE_ENVIO, ENVIADO o ENTREGADO
   fechaCreacion DateTime @default(now())
 
   // Un pedido pertenece a un usuario
@@ -93,5 +93,5 @@ model DetallePedido {
   // Un detalle de pedido pertenece a un pedido
   pedido Pedido @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
   // Un detalle de pedido tiene asociado un vinilo
-  vinilo Vinilo @relation(fields: [viniloId], references: [id])
+  vinilo Vinilo @relation(fields: [viniloId], references: [id], onDelete: Cascade)
 }

@@ -7,7 +7,8 @@ export const fetchApi = async (endpoint, options = {}) => {
     ...options.headers,
   };
 
-  const response = await fetch(`http://localhost:3000${endpoint}`, {
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const response = await fetch(`${baseUrl}${endpoint}`, {
     ...options,
     headers,
   });

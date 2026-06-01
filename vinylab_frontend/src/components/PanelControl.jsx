@@ -7,6 +7,10 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
   const [activeTab, setActiveTab] = useState('usuarios');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // Triggers de refresco compartidos para borrados en cascada
+  const [viniloRefreshTrigger, setViniloRefreshTrigger] = useState(0);
+  const [pedidoRefreshTrigger, setPedidoRefreshTrigger] = useState(0);
+
   const cierreSesion = () => {
     localStorage.removeItem('token');
     navigate('/');
@@ -44,6 +48,7 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
       <TablaCrud 
         endpoint="vinilo"
         title="Vinilos"
+        refreshTrigger={viniloRefreshTrigger}
         columns={[
           { key: 'id', label: 'ID' },
           { 
@@ -72,6 +77,7 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
       <TablaCrud 
         endpoint="categoria"
         title="Categorías"
+        onDeleteSuccess={() => setViniloRefreshTrigger(prev => prev + 1)}
         columns={[
           { key: 'id', label: 'ID' },
           { key: 'nombre', label: 'Nombre' },
@@ -80,6 +86,7 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
       <TablaCrud 
         endpoint="artista"
         title="Artistas"
+        onDeleteSuccess={() => setViniloRefreshTrigger(prev => prev + 1)}
         columns={[
           { key: 'id', label: 'ID' },
           { key: 'nombre', label: 'Nombre' },
@@ -94,11 +101,12 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
         endpoint="pedido"
         title="Pedidos"
         canAdd={false}
+        refreshTrigger={pedidoRefreshTrigger}
         columns={[
           { key: 'id', label: 'ID' },
           { key: 'usuarioId', label: 'Usuario', type: 'select', selectEndpoint: 'usuario', optionLabel: 'nombre', render: (row) => row.usuario ? row.usuario.nombre : row.usuarioId },
           { key: 'importeTotal', label: 'Importe Total', type: 'number', render: (row) => `${parseFloat(row.importeTotal).toFixed(2)} €` },
-          { key: 'estado', label: 'Estado' },
+          { key: 'estado', label: 'Estado', render: (row) => row.estado === 'PAGADO' || row.estado === 'pagado' || row.estado === 'PENDIENTE_ENVIO' || row.estado === 'pendiente_envio' ? 'Pendiente de envío' : row.estado },
           { key: 'fechaCreacion', label: 'Fecha Creación', hideInForm: true, render: (row) => new Date(row.fechaCreacion).toLocaleString('es-ES') },
         ]}
         expandableRowRender={(pedido) => {
@@ -107,7 +115,7 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
           }
           return (
             <div className="pedido-details-expand">
-              <h4>📦 Desglose de Productos del Pedido #{pedido.id}</h4>
+              <h4>Detalles del pedido</h4>
               <table className="pedido-details-table">
                 <thead>
                   <tr>
@@ -127,11 +135,11 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
                     return (
                       <tr key={item.id}>
                         <td>
-                          <div className="table-portada-preview table-portada-preview-small">
+                          <div className="table-portada-preview">
                             {vinilo.portada ? (
                               <img src={vinilo.portada} alt={vinilo.titulo} />
                             ) : (
-                              <div className="table-portada-fallback table-portada-fallback-small">💿</div>
+                              <div className="table-portada-fallback">💿</div>
                             )}
                           </div>
                         </td>
@@ -159,7 +167,23 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
         <div className="admin-sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>
       )}
 
-      <div className={`admin-sidebar ${isSidebarOpen ? 'open' : ''}`}>
+      {/* Mobile Admin Header */}
+      <header className="admin-mobile-header">
+        <button 
+          type="button" 
+          className={`admin-hamburger-btn ${isSidebarOpen ? 'active' : ''}`}
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          title="Menú de Administración"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </header>
+
+      <aside className={`admin-sidebar ${isSidebarOpen ? 'open' : ''}`}>
         <div className="admin-sidebar-header">
           <h2>VinyLab</h2>
           {/* Mobile Close Button in Sidebar */}
@@ -172,7 +196,7 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
             &times;
           </button>
         </div>
-        <div className="admin-sidebar-menu">
+        <nav className="admin-sidebar-menu" aria-label="Menú de administración">
           {tabs.map(tab => (
             <button
               key={tab.id}
@@ -185,7 +209,7 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
               {tab.label}
             </button>
           ))}
-        </div>
+        </nav>
         <div className="admin-sidebar-footer">
           <button 
             className="admin-menu-btn admin-sidebar-theme-btn" 
@@ -214,25 +238,8 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
             Cerrar Sesión
           </button>
         </div>
-      </div>
-      <div className="admin-content">
-        {/* Mobile Admin Header */}
-        <header className="admin-mobile-header">
-          <button 
-            type="button" 
-            className={`admin-hamburger-btn ${isSidebarOpen ? 'active' : ''}`}
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            title="Menú de Administración"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-          </button>
-          <span className="admin-mobile-title">VinyLab Admin</span>
-        </header>
-
+      </aside>
+      <main className="admin-content">
         {activeTab === 'catalogo' ? (
           mostrarCatalogo()
         ) : activeTab === 'pedidos' ? (
@@ -244,11 +251,12 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
               endpoint={config.endpoint}
               columns={config.columns}
               title={config.title}
+              onDeleteSuccess={config.endpoint === 'usuario' ? () => setPedidoRefreshTrigger(prev => prev + 1) : undefined}
             />
           )
         )}
 
-      </div>
+      </main>
     </div>
   );
 };

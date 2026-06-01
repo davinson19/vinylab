@@ -14,7 +14,6 @@ CREATE TABLE "Usuario" (
     "nombre" TEXT NOT NULL,
     "contrasena" TEXT NOT NULL,
     "direccion" TEXT,
-    "verificado" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Usuario_pkey" PRIMARY KEY ("id")
 );
@@ -55,7 +54,7 @@ CREATE TABLE "Pedido" (
     "id" SERIAL NOT NULL,
     "usuarioId" INTEGER NOT NULL,
     "importeTotal" DECIMAL(10,2) NOT NULL,
-    "estado" TEXT NOT NULL DEFAULT 'PAGADO',
+    "estado" TEXT NOT NULL DEFAULT 'PENDIENTE_ENVIO',
     "fechaCreacion" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Pedido_pkey" PRIMARY KEY ("id")
@@ -87,19 +86,19 @@ CREATE UNIQUE INDEX "Categoria_nombre_key" ON "Categoria"("nombre");
 CREATE UNIQUE INDEX "Artista_nombre_key" ON "Artista"("nombre");
 
 -- AddForeignKey
-ALTER TABLE "Usuario" ADD CONSTRAINT "Usuario_rolId_fkey" FOREIGN KEY ("rolId") REFERENCES "Rol"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Usuario" ADD CONSTRAINT "Usuario_rolId_fkey" FOREIGN KEY ("rolId") REFERENCES "Rol"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Vinilo" ADD CONSTRAINT "Vinilo_categoriaId_fkey" FOREIGN KEY ("categoriaId") REFERENCES "Categoria"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Vinilo" ADD CONSTRAINT "Vinilo_categoriaId_fkey" FOREIGN KEY ("categoriaId") REFERENCES "Categoria"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Vinilo" ADD CONSTRAINT "Vinilo_artistaId_fkey" FOREIGN KEY ("artistaId") REFERENCES "Artista"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Vinilo" ADD CONSTRAINT "Vinilo_artistaId_fkey" FOREIGN KEY ("artistaId") REFERENCES "Artista"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Pedido" ADD CONSTRAINT "Pedido_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "Usuario"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Pedido" ADD CONSTRAINT "Pedido_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "Usuario"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "DetallePedido" ADD CONSTRAINT "DetallePedido_pedidoId_fkey" FOREIGN KEY ("pedidoId") REFERENCES "Pedido"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "DetallePedido" ADD CONSTRAINT "DetallePedido_pedidoId_fkey" FOREIGN KEY ("pedidoId") REFERENCES "Pedido"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "DetallePedido" ADD CONSTRAINT "DetallePedido_viniloId_fkey" FOREIGN KEY ("viniloId") REFERENCES "Vinilo"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "DetallePedido" ADD CONSTRAINT "DetallePedido_viniloId_fkey" FOREIGN KEY ("viniloId") REFERENCES "Vinilo"("id") ON DELETE CASCADE ON UPDATE CASCADE;

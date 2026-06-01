@@ -41,6 +41,20 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
 
+  // Toast notification state
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const toastTimeoutRef = useRef(null);
+
+  const showToast = (message, type = 'success') => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    setToast({ show: true, message, type });
+    toastTimeoutRef.current = setTimeout(() => {
+      setToast({ show: false, message: '', type: 'success' });
+    }, 3000);
+  };
+
   // Orders States
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
@@ -116,6 +130,15 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
     cargarCategorias();
   }, []);
 
+  // Cleanup toast timer on unmount
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Fetch current user details on mount
   useEffect(() => {
     const loadUserProfile = async () => {
@@ -185,6 +208,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
       // Build update payload
       const payload = {
         nombre: profileData.nombre,
+        email: profileData.email,
         direccion: profileData.direccion
       };
 
@@ -193,12 +217,16 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
         payload.contrasena = profileData.contrasena;
       }
 
-      const updatedUser = await fetchApi(`/usuario/${userId}`, {
+      const response = await fetchApi(`/usuario/${userId}`, {
         method: 'PATCH',
         body: JSON.stringify(payload)
       });
 
-      setUser(updatedUser);
+      if (response.access_token) {
+        localStorage.setItem('token', response.access_token);
+      }
+
+      setUser(response.user || response);
       setProfileData(prev => ({
         ...prev,
         contrasena: '' // Clear password field
@@ -217,9 +245,10 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
       const existing = prevCart.find(item => item.id === vinyl.id);
       if (existing) {
         if (existing.quantity >= vinyl.stock) {
-          alert(`Lo sentimos, no hay más stock disponible para "${vinyl.titulo}".`);
+          showToast('No quedan más unidades', 'error');
           return prevCart;
         }
+        showToast('Añadido al carrito');
         return prevCart.map(item =>
           item.id === vinyl.id
             ? { ...item, quantity: item.quantity + 1 }
@@ -227,13 +256,13 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
         );
       } else {
         if (vinyl.stock < 1) {
-          alert(`Lo sentimos, "${vinyl.titulo}" está agotado.`);
+          showToast('No quedan más unidades', 'error');
           return prevCart;
         }
+        showToast('Añadido al carrito');
         return [...prevCart, { ...vinyl, quantity: 1 }];
       }
     });
-    setIsCartOpen(true); // Auto-open cart for premium feel
   };
 
   const actualizarCantidad = (vinylId, newQty, stock) => {
@@ -251,6 +280,10 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
 
   const eliminarDelCarrito = (vinylId) => {
     setCart(prevCart => prevCart.filter(item => item.id !== vinylId));
+  };
+
+  const vaciarCarrito = () => {
+    setCart([]);
   };
 
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
@@ -468,35 +501,6 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                     Configuración
                   </button>
 
-                  <button 
-                    className="dropdown-item"
-                    onClick={toggleTheme}
-                    title={isDarkMode ? 'Cambiar a Modo Día' : 'Cambiar a Modo Noche'}
-                  >
-                    {isDarkMode ? (
-                      <>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                          <circle cx="12" cy="12" r="5"></circle>
-                          <line x1="12" y1="1" x2="12" y2="3"></line>
-                          <line x1="12" y1="21" x2="12" y2="23"></line>
-                          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                          <line x1="1" y1="12" x2="3" y2="12"></line>
-                          <line x1="21" y1="12" x2="23" y2="12"></line>
-                          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                        </svg>
-                        Modo Día
-                      </>
-                    ) : (
-                      <>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                        </svg>
-                        Modo Noche
-                      </>
-                    )}
-                  </button>
 
                   <div className="dropdown-divider"></div>
 
@@ -536,7 +540,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
       {/* Mobile Menu Drawer Overlay */}
       {isMobileMenuOpen && (
         <div className="mobile-menu-overlay" onClick={() => setIsMobileMenuOpen(false)}>
-          <div className="mobile-menu-drawer" onClick={(e) => e.stopPropagation()}>
+          <nav className="mobile-menu-drawer" onClick={(e) => e.stopPropagation()} aria-label="Navegación móvil">
             <div className="mobile-menu-header">
               <h2 className="mobile-menu-title">Menú</h2>
               <button 
@@ -626,17 +630,17 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                 </button>
               </div>
             </div>
-          </div>
+          </nav>
         </div>
       )}
 
       {activeView === 'store' && (
-        <div 
+        <section 
           className="store-welcome-banner-full" 
           style={{ '--welcome-banner-url': `url(${welcomeGif})` }}
         >
           <h1 className="welcome-title">¡Hola{user ? `, ${user.nombre}` : ''}! Bienvenido a VinyLab</h1>
-        </div>
+        </section>
       )}
 
       {/* Main Content Area */}
@@ -732,9 +736,9 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                 </button>
               </div>
             ) : (
-              <div className="vinyl-grid fade-in">
+              <section className="vinyl-grid fade-in" aria-label="Catálogo de Vinilos">
                 {filteredVinyls.map(vinyl => (
-                  <div key={vinyl.id} className="vinyl-card">
+                  <article key={vinyl.id} className="vinyl-card">
                     <div className="vinyl-cover-container">
                       <span className="vinyl-category-badge">{vinyl.categoria ? vinyl.categoria.nombre : 'General'}</span>
                       {vinyl.portada ? (
@@ -765,22 +769,27 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                         className="btn-add-cart" 
                         onClick={() => agregarAlCarrito(vinyl)}
                         disabled={vinyl.stock <= 0}
+                        title={vinyl.stock <= 0 ? 'Agotado' : 'Añadir al carrito'}
                       >
-                        {vinyl.stock <= 0 ? 'Agotado' : '🛒 Añadir'}
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="9" cy="21" r="1"></circle>
+                          <circle cx="20" cy="21" r="1"></circle>
+                          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
                       </button>
                     </div>
-                  </div>
+                  </article>
                 ))}
-              </div>
+              </section>
             )}
           </div>
         ) : activeView === 'orders' ? (
           /* My Orders View */
-          <div className="orders-view-container fade-in">
-            <div className="orders-view-header">
+          <section className="orders-view-container fade-in" aria-label="Historial de Pedidos">
+            <header className="orders-view-header">
               <h2 className="orders-view-title">Historial de pedidos</h2>
               <p className="orders-view-subtitle">Consulta el historial y los detalles de tus compras en VinyLab</p>
-            </div>
+            </header>
             
             {loadingOrders ? (
               <div className="flex-center-padded">
@@ -821,7 +830,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                   });
                   
                   return (
-                    <div key={order.id} className="order-card">
+                    <article key={order.id} className="order-card">
                       <div className="order-card-header">
                         <div className="order-header-meta">
                           <span className="order-meta-label">Pedido</span>
@@ -838,7 +847,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                         <div className="order-header-meta order-header-meta-wide">
                           <span className="order-meta-label">Estado</span>
                           <span className={`order-status-badge ${order.estado.toLowerCase()}`}>
-                            {order.estado}
+                            {order.estado === 'PAGADO' || order.estado === 'pagado' || order.estado === 'PENDIENTE_ENVIO' || order.estado === 'pendiente_envio' ? 'Pendiente de envío' : order.estado}
                           </span>
                         </div>
                       </div>
@@ -883,20 +892,20 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                         <span className="order-total-label">Total pagado:</span>
                         <span className="order-total-price">{parseFloat(order.importeTotal).toFixed(2)} €</span>
                       </div>
-                    </div>
+                    </article>
                   );
                 })}
               </div>
             )}
-          </div>
+          </section>
         ) : (
           /* Profile Configuration View */
-          <div className="profile-view-container fade-in">
-            <div className="profile-card">
-              <div className="profile-card-header">
+          <section className="profile-view-container fade-in" aria-label="Configuración de Perfil">
+            <article className="profile-card">
+              <header className="profile-card-header">
                 <h2 className="profile-card-title">Configuración de Usuario</h2>
                 <p className="profile-card-subtitle">Administra y actualiza la información de tu perfil de VinyLab</p>
-              </div>
+              </header>
 
               {profileError && <div className="error-message fade-in spaced-error">{profileError}</div>}
               {profileSuccess && <div className="success-message fade-in spaced-success">{profileSuccess}</div>}
@@ -916,18 +925,18 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                   />
                 </div>
 
-                <div className="form-group">
+                 <div className="form-group">
                   <label className="form-label" htmlFor="profile-email">Correo Electrónico</label>
-                  <div className="input-with-badge">
-                    <input
-                      type="email"
-                      id="profile-email"
-                      className="form-input locked-input"
-                      value={profileData.email}
-                      disabled
-                    />
-                    <span className="input-badge">🔒 Bloqueado</span>
-                  </div>
+                  <input
+                    type="email"
+                    id="profile-email"
+                    name="email"
+                    className="form-input"
+                    placeholder="Tu correo electrónico"
+                    value={profileData.email}
+                    onChange={cambioPerfil}
+                    required
+                  />
                 </div>
 
                 <div className="form-group">
@@ -957,45 +966,40 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                 </div>
 
                 <div className="profile-form-footer">
-                  <div className="profile-actions-row">
-                    <button 
-                      type="button" 
-                      className="btn-secondary-outline"
-                      onClick={() => setActiveView('store')}
-                    >
-                      Volver a la Tienda
-                    </button>
-                    <button 
-                      type="submit" 
-                      className="btn-primary btn-flex-no-margin" 
-                      disabled={savingProfile}
-                    >
-                      {savingProfile ? 'Guardando...' : 'Guardar Cambios'}
-                    </button>
-                  </div>
-
                   <button 
-                    type="button" 
-                    className="profile-logout-btn"
-                    onClick={cierreSesion}
+                    type="submit" 
+                    className="btn-primary btn-flex-no-margin" 
+                    disabled={savingProfile}
                   >
-                    Cerrar Sesión
+                    {savingProfile ? 'Guardando...' : 'Guardar Cambios'}
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
+            </article>
+          </section>
         )}
       </main>
 
       {/* Shopping Cart Drawer */}
       {isCartOpen && (
         <div className="cart-drawer-overlay" onClick={() => setIsCartOpen(false)}>
-          <div className="cart-drawer" onClick={(e) => e.stopPropagation()}>
-            <div className="cart-drawer-header">
-              <h2 className="cart-drawer-title">
-                🛒 Tu Carrito
-              </h2>
+          <aside className="cart-drawer" onClick={(e) => e.stopPropagation()} aria-label="Carrito de compras">
+            <header className="cart-drawer-header">
+              <div className="cart-drawer-header-left">
+                <h2 className="cart-drawer-title">
+                  Tu carrito
+                </h2>
+                {cart.length > 0 && (
+                  <button 
+                    type="button" 
+                    className="btn-clear-cart" 
+                    onClick={vaciarCarrito}
+                    title="Vaciar carrito"
+                  >
+                    Vaciar
+                  </button>
+                )}
+              </div>
               <button 
                 type="button" 
                 className="btn-close-cart" 
@@ -1007,7 +1011,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
               </button>
-            </div>
+            </header>
             
             <div className="cart-drawer-body">
               {cart.length === 0 ? (
@@ -1086,7 +1090,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                 </button>
               </div>
             )}
-          </div>
+          </aside>
         </div>
       )}
 
@@ -1259,6 +1263,25 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
           </div>
         </div>
       )}
+
+      {/* Toast Notification */}
+      <div className={`toast-notification ${toast.type || 'success'} ${toast.show ? 'show' : ''}`}>
+        <div className="toast-content">
+          {toast.type === 'error' ? (
+            <svg className="toast-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          ) : (
+            <svg className="toast-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          )}
+          <span className="toast-text">{toast.message}</span>
+        </div>
+      </div>
     </div>
   );
 };

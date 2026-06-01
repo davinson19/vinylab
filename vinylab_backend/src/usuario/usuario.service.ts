@@ -1,12 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsuarioService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService
+  ) {}
 
   async create(createUsuarioDto: CreateUsuarioDto) {
     const saltOrRounds = 10;
@@ -40,7 +44,16 @@ export class UsuarioService {
   async update(id: number, updateUsuarioDto: UpdateUsuarioDto) {
     const existing = await this.prisma.usuario.findUnique({ where: { id } });
     if (!existing) {
-      throw new Error('Usuario no encontrado');
+      throw new BadRequestException('Usuario no encontrado');
+    }
+
+    if (updateUsuarioDto.email && updateUsuarioDto.email !== existing.email) {
+      const duplicate = await this.prisma.usuario.findUnique({
+        where: { email: updateUsuarioDto.email }
+      });
+      if (duplicate) {
+        throw new BadRequestException('El correo electrónico ya está registrado por otro usuario');
+      }
     }
 
     if (updateUsuarioDto.contrasena) {
@@ -53,10 +66,23 @@ export class UsuarioService {
       }
     }
     
-    return this.prisma.usuario.update({
+    const updatedUser = await this.prisma.usuario.update({
       where: { id },
       data: updateUsuarioDto,
+      include: { rol: true }
     });
+
+    const payload = {
+      email: updatedUser.email,
+      sub: updatedUser.id,
+      rolId: updatedUser.rolId,
+      rolName: updatedUser.rol?.nombre
+    };
+
+    return {
+      user: updatedUser,
+      access_token: this.jwtService.sign(payload)
+    };
   }
 
   remove(id: number) {

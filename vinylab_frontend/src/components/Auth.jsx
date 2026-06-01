@@ -38,7 +38,8 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
     setSuccess('');
 
     const endpoint = isLogin ? '/auth/login' : '/auth/register';
-    const url = `http://localhost:3000${endpoint}`;
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const url = `${baseUrl}${endpoint}`;
 
     try {
       const payload = isLogin
@@ -125,11 +126,11 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
           </svg>
         )}
       </button>
-      <div className="auth-container fade-in">
-        <div className="glass-panel">
-          <div className="auth-header">
+      <main className="auth-container fade-in">
+        <section className="glass-panel">
+          <header className="auth-header">
             <h1 className="auth-title">VinyLab</h1>
-          </div>
+          </header>
 
         {error && <div className="error-message fade-in">{error}</div>}
         {success && <div className="success-message fade-in">{success}</div>}
@@ -205,8 +206,8 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
             {isLogin ? 'Regístrate aquí' : 'Inicia sesión'}
           </button>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
     </>
   );
 };

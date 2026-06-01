@@ -65,7 +65,7 @@ const SubirImagen = ({ value, onChange, label, required }) => {
   return (
     <div className="form-group">
       <label className="form-label">{label}</label>
-      <div className="image-input-container">
+      <section className="image-input-container" aria-label="Cargador de imagen">
         <div 
           className={`image-dropzone ${dragActive ? 'drag-active' : ''}`}
           onDragEnter={arrastrar}
@@ -106,12 +106,12 @@ const SubirImagen = ({ value, onChange, label, required }) => {
             </div>
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 };
 
-const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRender }) => {
+const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRender, refreshTrigger, onDeleteSuccess }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -142,9 +142,8 @@ const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRende
 
   useEffect(() => {
     cargarDatos();
-
-    // Establecer conexión SSE para sincronización en tiempo real de la tabla
-    const eventSource = new EventSource('http://localhost:3000/realtime/sse');
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const eventSource = new EventSource(`${baseUrl}/realtime/sse`);
 
     eventSource.onmessage = (event) => {
       try {
@@ -181,6 +180,15 @@ const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRende
       eventSource.close();
     };
   }, [endpoint]);
+
+  const isFirstMount = useRef(true);
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    cargarDatos();
+  }, [refreshTrigger]);
 
   useEffect(() => {
     const fetchOptions = async () => {
@@ -265,12 +273,29 @@ const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRende
   };
 
   const eliminarRegistro = async (id) => {
-    if (window.confirm(`¿Estás seguro de que deseas eliminar este registro?`)) {
+    let mensajeConfirmacion = '¿Estás seguro de que deseas eliminar este registro?';
+
+    if (endpoint === 'artista') {
+      mensajeConfirmacion = '⚠️ ¡ATENCIÓN! El borrado en cascada está activo.\n\nAl eliminar este artista se borrarán permanentemente todos sus vinilos asociados y las referencias a estos en los pedidos existentes.\n\n¿Estás seguro de que deseas continuar con la eliminación del artista?';
+    } else if (endpoint === 'categoria') {
+      mensajeConfirmacion = '⚠️ ¡ATENCIÓN! El borrado en cascada está activo.\n\nAl eliminar esta categoría se borrarán permanentemente todos los vinilos de esta categoría y las referencias a estos en los pedidos existentes.\n\n¿Estás seguro de que deseas continuar con la eliminación de la categoría?';
+    } else if (endpoint === 'usuario') {
+      mensajeConfirmacion = '⚠️ ¡ATENCIÓN! El borrado en cascada está activo.\n\nAl eliminar este usuario se borrarán permanentemente todos sus pedidos y los detalles de compra asociados a los mismos.\n\n¿Estás seguro de que deseas continuar con la eliminación del usuario?';
+    } else if (endpoint === 'vinilo') {
+      mensajeConfirmacion = '⚠️ ¡ATENCIÓN! El borrado en cascada está activo.\n\nAl eliminar este vinilo se borrarán permanentemente los detalles de compra asociados a este disco en todos los pedidos.\n\n¿Estás seguro de que deseas continuar con la eliminación del vinilo?';
+    } else if (endpoint === 'pedido') {
+      mensajeConfirmacion = '⚠️ ¡ATENCIÓN! El borrado en cascada está activo.\n\nAl eliminar este pedido se borrarán permanentemente todos los detalles de compra asociados al mismo.\n\n¿Estás seguro de que deseas continuar con la eliminación del pedido?';
+    }
+
+    if (window.confirm(mensajeConfirmacion)) {
       try {
         await fetchApi(`/${endpoint}/${id}`, {
           method: 'DELETE',
         });
         cargarDatos();
+        if (onDeleteSuccess) {
+          onDeleteSuccess();
+        }
       } catch (err) {
         alert(`Error al eliminar: ${err.message}`);
       }
@@ -278,15 +303,15 @@ const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRende
   };
 
   return (
-    <div className="crud-container fade-in">
-      <div className="admin-header">
-        <h1>{title}</h1>
+    <section className="crud-container fade-in" aria-label={`Panel de Gestión de ${title}`}>
+      <header className="admin-header">
+        <h2>{title}</h2>
         {canAdd && (
           <button className="btn-primary btn-add-new" onClick={() => abrirModal()}>
             + Agregar Nuevo
           </button>
         )}
-      </div>
+      </header>
 
       {error && <div className="error-message spaced-error">{error}</div>}
 
@@ -450,7 +475,7 @@ const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRende
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 };
 
