@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { fetchApi } from '../utils/api';
 
+const FALLBACK_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="10" fill="%231e1e2e"/><circle cx="50" cy="50" r="40" fill="%230f0f15" stroke="%23313244" stroke-width="2"/><circle cx="50" cy="50" r="30" fill="none" stroke="%2345475a" stroke-dasharray="8,6" stroke-width="1"/><circle cx="50" cy="50" r="20" fill="none" stroke="%2345475a" stroke-dasharray="6,4" stroke-width="1"/><circle cx="50" cy="50" r="12" fill="%23cba6f7"/><circle cx="50" cy="50" r="4" fill="%230f0f15"/></svg>`;
+
+
 const SubirImagen = ({ value, onChange, label, required }) => {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef(null);
@@ -89,7 +92,7 @@ const SubirImagen = ({ value, onChange, label, required }) => {
         {value && (
           <div className="image-preview-panel fade-in">
             <div className="image-preview-box">
-              <img src={value} alt="Previsualización de portada" />
+              <img src={value} alt="Previsualización de portada" onError={(e) => { e.target.src = FALLBACK_SVG; }} />
             </div>
             <div className="image-preview-info">
               <div className="image-preview-title" title={value.startsWith('data:') ? 'Imagen en Base64' : value}>
@@ -449,6 +452,16 @@ const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRende
                           name={col.key}
                           checked={formData[col.key] || false}
                           onChange={cambioInput}
+                        />
+                      ) : col.type === 'textarea' ? (
+                        <textarea
+                          name={col.key}
+                          className="form-input form-textarea"
+                          value={formData[col.key] !== undefined ? formData[col.key] : ''}
+                          onChange={cambioInput}
+                          disabled={col.key === 'id'}
+                          required={col.required !== false && col.key !== 'id'}
+                          rows={3}
                         />
                       ) : (
                         <input

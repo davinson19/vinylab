@@ -4,6 +4,9 @@ import { fetchApi } from '../utils/api';
 import logo from '../assets/logo.png';
 import welcomeGif from '../assets/banner.gif';
 
+const FALLBACK_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="10" fill="%231e1e2e"/><circle cx="50" cy="50" r="40" fill="%230f0f15" stroke="%23313244" stroke-width="2"/><circle cx="50" cy="50" r="30" fill="none" stroke="%2345475a" stroke-dasharray="8,6" stroke-width="1"/><circle cx="50" cy="50" r="20" fill="none" stroke="%2345475a" stroke-dasharray="6,4" stroke-width="1"/><circle cx="50" cy="50" r="12" fill="%23cba6f7"/><circle cx="50" cy="50" r="4" fill="%230f0f15"/></svg>`;
+
+
 const Tienda = ({ toggleTheme, isDarkMode }) => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
@@ -742,7 +745,12 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                     <div className="vinyl-cover-container">
                       <span className="vinyl-category-badge">{vinyl.categoria ? vinyl.categoria.nombre : 'General'}</span>
                       {vinyl.portada ? (
-                        <img src={vinyl.portada} alt={vinyl.titulo} className="vinyl-cover-img" />
+                        <img 
+                          src={vinyl.portada} 
+                          alt={vinyl.titulo} 
+                          className="vinyl-cover-img" 
+                          onError={(e) => { e.target.src = FALLBACK_SVG; }}
+                        />
                       ) : (
                         <div className="fallback-cover-large">💿</div>
                       )}
@@ -862,7 +870,11 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                               <div key={detail.id} className="order-item-row">
                                 <div className="order-item-cover">
                                   {detail.vinilo && detail.vinilo.portada ? (
-                                    <img src={detail.vinilo.portada} alt={detail.vinilo.titulo} />
+                                    <img 
+                                      src={detail.vinilo.portada} 
+                                      alt={detail.vinilo.titulo} 
+                                      onError={(e) => { e.target.src = FALLBACK_SVG; }}
+                                    />
                                   ) : (
                                     <div className="fallback-cover-small">💿</div>
                                   )}
@@ -1025,7 +1037,11 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                   <div key={item.id} className="cart-item">
                     <div className="cart-item-cover">
                       {item.portada ? (
-                        <img src={item.portada} alt={item.titulo} />
+                        <img 
+                          src={item.portada} 
+                          alt={item.titulo} 
+                          onError={(e) => { e.target.src = FALLBACK_SVG; }}
+                        />
                       ) : (
                         <div className="fallback-cover-medium">💿</div>
                       )}
@@ -1133,7 +1149,11 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                         <div key={item.id} className="payment-detail-item">
                           <div className="payment-detail-cover">
                             {item.portada ? (
-                              <img src={item.portada} alt={item.titulo} />
+                              <img 
+                                src={item.portada} 
+                                alt={item.titulo} 
+                                onError={(e) => { e.target.src = FALLBACK_SVG; }}
+                              />
                             ) : (
                               <div className="payment-detail-fallback-cover">💿</div>
                             )}

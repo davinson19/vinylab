@@ -60,7 +60,7 @@ model Vinilo {
   precio          Decimal @db.Decimal(10, 2)
   anioLanzamiento Int
   stock           Int     @default(0)
-  portada         String? // URL de la portada
+  portada         String? 
 
   // Un vinilo pertenece a una categoría
   categoria   Categoria    @relation(fields: [categoriaId], references: [id], onDelete: Cascade)

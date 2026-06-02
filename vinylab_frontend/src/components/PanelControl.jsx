@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TablaCrud from './TablaCrud';
 
+const FALLBACK_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="10" fill="%231e1e2e"/><circle cx="50" cy="50" r="40" fill="%230f0f15" stroke="%23313244" stroke-width="2"/><circle cx="50" cy="50" r="30" fill="none" stroke="%2345475a" stroke-dasharray="8,6" stroke-width="1"/><circle cx="50" cy="50" r="20" fill="none" stroke="%2345475a" stroke-dasharray="6,4" stroke-width="1"/><circle cx="50" cy="50" r="12" fill="%23cba6f7"/><circle cx="50" cy="50" r="4" fill="%230f0f15"/></svg>`;
+
+
 const PanelControl = ({ toggleTheme, isDarkMode }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('usuarios');
@@ -59,7 +62,11 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
             render: (row) => (
               <div className="table-portada-preview">
                 {row.portada ? (
-                  <img src={row.portada} alt={row.titulo} />
+                  <img 
+                    src={row.portada} 
+                    alt={row.titulo} 
+                    onError={(e) => { e.target.src = FALLBACK_SVG; }}
+                  />
                 ) : (
                   <div className="table-portada-fallback">💿</div>
                 )}
@@ -67,6 +74,17 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
             )
           },
           { key: 'titulo', label: 'Título' },
+          { 
+            key: 'descripcion', 
+            label: 'Descripción', 
+            type: 'textarea', 
+            required: false, 
+            render: (row) => (
+              <div className="table-description-preview" title={row.descripcion}>
+                {row.descripcion || '-'}
+              </div>
+            )
+          },
           { key: 'precio', label: 'Precio', type: 'number' },
           { key: 'stock', label: 'Stock', type: 'number' },
           { key: 'anioLanzamiento', label: 'Año', type: 'number' },
@@ -137,7 +155,11 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
                         <td>
                           <div className="table-portada-preview">
                             {vinilo.portada ? (
-                              <img src={vinilo.portada} alt={vinilo.titulo} />
+                              <img 
+                                src={vinilo.portada} 
+                                alt={vinilo.titulo} 
+                                onError={(e) => { e.target.src = FALLBACK_SVG; }}
+                              />
                             ) : (
                               <div className="table-portada-fallback">💿</div>
                             )}
