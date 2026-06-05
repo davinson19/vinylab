@@ -114,7 +114,7 @@ const SubirImagen = ({ value, onChange, label, required }) => {
   );
 };
 
-const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRender, refreshTrigger, onDeleteSuccess }) => {
+const TablaCrud = ({ endpoint, columns, title, formTitle, canAdd = true, expandableRowRender, refreshTrigger, onDeleteSuccess }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -211,10 +211,21 @@ const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRende
     fetchOptions();
   }, [columns]);
 
+  const esRequerido = (col) => {
+    if (col.key === 'id') return false;
+    if (col.required === false) return false;
+    if (typeof col.required === 'function') {
+      return col.required(editingId);
+    }
+    return true;
+  };
+
   const abrirModal = (item = null) => {
     if (item) {
       setEditingId(item.id);
-      setFormData(item);
+      const copy = { ...item };
+      delete copy.contrasena;
+      setFormData(copy);
     } else {
       setEditingId(null);
       setFormData({});
@@ -245,6 +256,18 @@ const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRende
 
   const enviarFormulario = async (e) => {
     e.preventDefault();
+
+    // Validar que no haya valores numéricos negativos
+    for (const col of columns) {
+      if (col.type === 'number') {
+        const val = formData[col.key];
+        if (val !== undefined && val !== '' && Number(val) < 0) {
+          alert(`El campo "${col.label}" no puede ser negativo.`);
+          return;
+        }
+      }
+    }
+
     try {
       // Remove relationships or complex nested objects before sending
       const payload = { ...formData };
@@ -256,6 +279,10 @@ const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRende
           delete payload[key];
         }
       });
+
+      if (editingId && (payload.contrasena === undefined || payload.contrasena === '')) {
+        delete payload.contrasena;
+      }
 
       if (editingId) {
         await fetchApi(`/${endpoint}/${editingId}`, {
@@ -326,7 +353,7 @@ const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRende
             <thead>
               <tr>
                 {expandableRowRender && <th className="th-detail">Detalle</th>}
-                {columns.map(col => (
+                {columns.filter(col => !col.hideInTable).map(col => (
                   <th key={col.key}>{col.label}</th>
                 ))}
                 <th>Acciones</th>
@@ -348,7 +375,7 @@ const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRende
                         </button>
                       </td>
                     )}
-                    {columns.map(col => {
+                    {columns.filter(col => !col.hideInTable).map(col => {
                       let cellValue = row[col.key];
                       if (col.render) {
                         cellValue = col.render(row);
@@ -373,7 +400,7 @@ const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRende
                   </tr>
                   {expandableRowRender && expandedRows[row.id] && (
                     <tr className="expanded-row-details">
-                      <td colSpan={columns.length + 2}>
+                      <td colSpan={columns.filter(col => !col.hideInTable).length + 2}>
                         <div className="expanded-details-container">
                           {expandableRowRender(row)}
                         </div>
@@ -384,7 +411,7 @@ const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRende
               ))}
               {data.length === 0 && (
                 <tr>
-                  <td colSpan={columns.length + (expandableRowRender ? 2 : 1)} className="td-center">
+                  <td colSpan={columns.filter(col => !col.hideInTable).length + (expandableRowRender ? 2 : 1)} className="td-center">
                     No hay registros
                   </td>
                 </tr>
@@ -398,7 +425,7 @@ const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRende
         <div className="modal-overlay fade-in">
           <div className="modal-content">
             <div className="modal-header">
-              <h3>{editingId ? 'Editar' : 'Agregar'} {title}</h3>
+              <h3>{editingId ? 'Editar' : 'Agregar'} {formTitle || title}</h3>
               <button className="modal-close" onClick={cerrarModal}>&times;</button>
             </div>
             <div className="modal-body">
@@ -414,7 +441,7 @@ const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRende
                         label={col.label}
                         value={formData[col.key] || ''}
                         onChange={(val) => setFormData(prev => ({ ...prev, [col.key]: val }))}
-                        required={col.required !== false && col.key !== 'id' && !formData[col.key]}
+                        required={esRequerido(col) && !formData[col.key]}
                       />
                     );
                   }
@@ -429,7 +456,7 @@ const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRende
                           value={formData[col.key] !== undefined ? formData[col.key] : ''}
                           onChange={cambioInput}
                           disabled={col.key === 'id'}
-                          required={col.required !== false && col.key !== 'id'}
+                          required={esRequerido(col)}
                         >
                           <option value="">Seleccione...</option>
                           {(selectOptions[col.key] || []).map(opt => {
@@ -460,7 +487,7 @@ const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRende
                           value={formData[col.key] !== undefined ? formData[col.key] : ''}
                           onChange={cambioInput}
                           disabled={col.key === 'id'}
-                          required={col.required !== false && col.key !== 'id'}
+                          required={esRequerido(col)}
                           rows={3}
                         />
                       ) : (
@@ -471,7 +498,9 @@ const TablaCrud = ({ endpoint, columns, title, canAdd = true, expandableRowRende
                           value={formData[col.key] !== undefined ? formData[col.key] : ''}
                           onChange={cambioInput}
                           disabled={col.key === 'id'}
-                          required={col.required !== false && col.key !== 'id'}
+                          required={esRequerido(col)}
+                          min={col.type === 'number' ? "0" : undefined}
+                          step={col.type === 'number' ? (col.key === 'precio' || col.key === 'importeTotal' ? 'any' : '1') : undefined}
                         />
                       )}
                     </div>

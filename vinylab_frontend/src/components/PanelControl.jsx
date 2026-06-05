@@ -5,7 +5,7 @@ import TablaCrud from './TablaCrud';
 const FALLBACK_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="10" fill="%231e1e2e"/><circle cx="50" cy="50" r="40" fill="%230f0f15" stroke="%23313244" stroke-width="2"/><circle cx="50" cy="50" r="30" fill="none" stroke="%2345475a" stroke-dasharray="8,6" stroke-width="1"/><circle cx="50" cy="50" r="20" fill="none" stroke="%2345475a" stroke-dasharray="6,4" stroke-width="1"/><circle cx="50" cy="50" r="12" fill="%23cba6f7"/><circle cx="50" cy="50" r="4" fill="%230f0f15"/></svg>`;
 
 
-const PanelControl = ({ toggleTheme, isDarkMode }) => {
+const PanelControl = ({ toggleTheme, isDarkMode, setToken }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('usuarios');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -16,6 +16,7 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
 
   const cierreSesion = () => {
     localStorage.removeItem('token');
+    setToken(null);
     navigate('/');
   };
 
@@ -31,12 +32,14 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
         return {
           endpoint: 'usuario',
           title: 'Gestión de Usuarios',
+          formTitle: 'Usuarios',
           columns: [
             { key: 'id', label: 'ID' },
             { key: 'nombre', label: 'Nombre' },
             { key: 'email', label: 'Email' },
             { key: 'rolId', label: 'Rol', type: 'select', selectEndpoint: 'rol', optionLabel: 'nombre', render: (row) => row.rol ? row.rol.nombre : row.rolId },
             { key: 'direccion', label: 'Dirección', required: false },
+            { key: 'contrasena', label: 'Contraseña', type: 'password', hideInTable: true, required: (editingId) => !editingId },
           ]
         };
       default:
@@ -273,6 +276,7 @@ const PanelControl = ({ toggleTheme, isDarkMode }) => {
               endpoint={config.endpoint}
               columns={config.columns}
               title={config.title}
+              formTitle={config.formTitle}
               onDeleteSuccess={config.endpoint === 'usuario' ? () => setPedidoRefreshTrigger(prev => prev + 1) : undefined}
             />
           )

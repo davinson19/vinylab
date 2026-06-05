@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../utils/LanguageContext';
 
-const Auth = ({ toggleTheme, isDarkMode }) => {
+const Auth = ({ toggleTheme, isDarkMode, setToken }) => {
   const navigate = useNavigate();
+  const { idioma, cambiarIdioma, t } = useLanguage();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -67,22 +69,23 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
       }
 
       if (isLogin) {
-        setSuccess('¡Inicio de sesión exitoso!');
+        setSuccess(t('exitoLogin'));
         localStorage.setItem('token', data.access_token);
+        setToken(data.access_token);
 
         try {
           const payload = JSON.parse(atob(data.access_token.split('.')[1]));
           if (payload.rolName === 'Admin') {
             navigate('/admin');
           } else {
-            // Navigate to catalog or home for client
-            navigate('/');
+            // Navigate to catalog for client
+            navigate('/catalogo');
           }
         } catch (e) {
           console.error("Error decoding token", e);
         }
       } else {
-        setSuccess('¡Registro completado exitosamente! Ahora puedes iniciar sesión.');
+        setSuccess(t('exitoRegistro'));
         setIsLogin(true); // Switch to login after successful registration
         // Reset specific fields but keep email
         setFormData((prev) => ({ ...prev, contrasena: '', nombre: '', direccion: '' }));
@@ -102,30 +105,48 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={toggleTheme}
-        className="btn-fixed-theme-toggle"
-        title={isDarkMode ? 'Cambiar a Modo Día' : 'Cambiar a Modo Noche'}
-      >
-        {isDarkMode ? (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="5"></circle>
-            <line x1="12" y1="1" x2="12" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-            <line x1="1" y1="12" x2="3" y2="12"></line>
-            <line x1="21" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      <div className="auth-controls-fixed">
+        <div className="auth-language-selector">
+          <svg className="language-globe-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
           </svg>
-        ) : (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-          </svg>
-        )}
-      </button>
+          <select 
+            className="language-select" 
+            value={idioma} 
+            onChange={(e) => cambiarIdioma(e.target.value)}
+            aria-label="Language Selector"
+          >
+            <option value="es">ES</option>
+            <option value="en">EN</option>
+          </select>
+        </div>
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="btn-fixed-theme-toggle"
+          title={isDarkMode ? t('modoDia') : t('modoNoche')}
+        >
+          {isDarkMode ? (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          )}
+        </button>
+      </div>
       <main className="auth-container fade-in">
         <section className="glass-panel">
           <header className="auth-header">
@@ -138,13 +159,13 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
         <form onSubmit={manejarEnvio} className="fade-in" key={isLogin ? 'login' : 'register'}>
           {!isLogin && (
             <div className="form-group">
-              <label className="form-label" htmlFor="nombre">Nombre</label>
+              <label className="form-label" htmlFor="nombre">{t('nombre')}</label>
               <input
                 type="text"
                 id="nombre"
                 name="nombre"
                 className="form-input"
-                placeholder="Tu nombre completo"
+                placeholder={t('nombrePlaceholder')}
                 value={formData.nombre}
                 onChange={manejarCambio}
                 required={!isLogin}
@@ -153,13 +174,13 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
           )}
 
           <div className="form-group">
-            <label className="form-label" htmlFor="email">Correo Electrónico</label>
+            <label className="form-label" htmlFor="email">{t('email')}</label>
             <input
               type="email"
               id="email"
               name="email"
               className="form-input"
-              placeholder="correo@ejemplo.com"
+              placeholder={t('emailPlaceholder')}
               value={formData.email}
               onChange={manejarCambio}
               required
@@ -167,13 +188,13 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="contrasena">Contraseña</label>
+            <label className="form-label" htmlFor="contrasena">{t('contrasena')}</label>
             <input
               type="password"
               id="contrasena"
               name="contrasena"
               className="form-input"
-              placeholder="••••••••"
+              placeholder={t('contrasenaPlaceholder')}
               value={formData.contrasena}
               onChange={manejarCambio}
               required
@@ -182,13 +203,13 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
 
           {!isLogin && (
             <div className="form-group">
-              <label className="form-label" htmlFor="direccion">Dirección (Opcional)</label>
+              <label className="form-label" htmlFor="direccion">{t('direccion')}</label>
               <input
                 type="text"
                 id="direccion"
                 name="direccion"
                 className="form-input"
-                placeholder="Tu dirección de envío"
+                placeholder={t('direccionPlaceholder')}
                 value={formData.direccion}
                 onChange={manejarCambio}
               />
@@ -196,14 +217,14 @@ const Auth = ({ toggleTheme, isDarkMode }) => {
           )}
 
           <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'Procesando...' : isLogin ? 'Iniciar Sesión' : 'Registrarse'}
+            {loading ? t('procesando') : isLogin ? t('iniciarSesion') : t('registrarse')}
           </button>
         </form>
 
         <div className="auth-toggle">
-          {isLogin ? '¿No tienes una cuenta? ' : '¿Ya tienes una cuenta? '}
+          {isLogin ? t('noCuenta') : t('yaCuenta')}
           <button type="button" onClick={alternarModo} className="auth-toggle-link">
-            {isLogin ? 'Regístrate aquí' : 'Inicia sesión'}
+            {isLogin ? t('registrateAqui') : t('iniciaSesion')}
           </button>
         </div>
       </section>

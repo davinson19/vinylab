@@ -259,11 +259,18 @@ body {
   }
 }
 
-/* Botón de tema flotante para login/registro */
-.btn-fixed-theme-toggle {
+/* Contenedor flotante para controles (tema e idioma) en login/registro */
+.auth-controls-fixed {
   position: fixed;
   top: 1.5rem;
   right: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 100;
+}
+
+.btn-fixed-theme-toggle {
   background: var(--surface);
   border: 1px solid var(--surface-border);
   border-radius: 50%;
@@ -274,7 +281,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -284,6 +290,35 @@ body {
 .btn-fixed-theme-toggle:hover {
   background: rgba(255, 255, 255, 0.1);
   transform: scale(1.05);
+}
+
+.light-mode .btn-fixed-theme-toggle:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.auth-language-selector {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 20px;
+  padding: 0.35rem 0.75rem;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.auth-language-selector:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--primary);
+  transform: scale(1.02);
+}
+
+.light-mode .auth-language-selector:hover {
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .locked-input {

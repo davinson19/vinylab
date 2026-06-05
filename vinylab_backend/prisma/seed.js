@@ -448,11 +448,7 @@ async function main() {
     });
     if (!existe) {
       console.log(`Processing cover image for ${vinyl.titulo}...`);
-      if (vinyl.portada && vinyl.portada.startsWith('http')) {
-        // Add a 500ms delay between image fetches to prevent Wikipedia rate-limiting
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        vinyl.portada = await getBase64Image(vinyl.portada);
-      }
+      // Use raw URLs directly to seed instantly and avoid Wikipedia 429 rate limiting
       await prisma.vinilo.create({ data: vinyl });
     }
   }

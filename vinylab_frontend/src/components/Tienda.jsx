@@ -1,15 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchApi } from '../utils/api';
 import logo from '../assets/logo.png';
 import welcomeGif from '../assets/banner.gif';
+import Footer from './Footer';
+import { useLanguage } from '../utils/LanguageContext';
 
 const FALLBACK_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="10" fill="%231e1e2e"/><circle cx="50" cy="50" r="40" fill="%230f0f15" stroke="%23313244" stroke-width="2"/><circle cx="50" cy="50" r="30" fill="none" stroke="%2345475a" stroke-dasharray="8,6" stroke-width="1"/><circle cx="50" cy="50" r="20" fill="none" stroke="%2345475a" stroke-dasharray="6,4" stroke-width="1"/><circle cx="50" cy="50" r="12" fill="%23cba6f7"/><circle cx="50" cy="50" r="4" fill="%230f0f15"/></svg>`;
 
 
-const Tienda = ({ toggleTheme, isDarkMode }) => {
+const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
+  const { idioma, t } = useLanguage();
 
   // States
   const [activeView, setActiveView] = useState('store'); // 'store' | 'profile' | 'orders'
@@ -37,9 +40,22 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Decode user ID from token
+  const token = localStorage.getItem('token');
+  let userId = null;
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      userId = payload.sub;
+    } catch (e) {
+      console.error("Error al decodificar el token:", e);
+    }
+  }
+
   // Cart States (Persisted in localStorage)
   const [cart, setCart] = useState(() => {
-    const saved = localStorage.getItem('vinylab_cart');
+    if (!userId) return [];
+    const saved = localStorage.getItem(`vinylab_cart_${userId}`);
     return saved ? JSON.parse(saved) : [];
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -73,23 +89,13 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isPaymentSuccess, setIsPaymentSuccess] = useState(false);
   const [paymentError, setPaymentError] = useState('');
-
-  // Decode user ID from token
-  const token = localStorage.getItem('token');
-  let userId = null;
-  if (token) {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      userId = payload.sub;
-    } catch (e) {
-      console.error("Error al decodificar el token:", e);
-    }
-  }
+  const [selectedVinyl, setSelectedVinyl] = useState(null);
 
   // Synchronize cart with localStorage
   useEffect(() => {
-    localStorage.setItem('vinylab_cart', JSON.stringify(cart));
-  }, [cart]);
+    if (!userId) return;
+    localStorage.setItem(`vinylab_cart_${userId}`, JSON.stringify(cart));
+  }, [cart, userId]);
 
   // Load vinyls and categories from database
   const cargarVinilos = async () => {
@@ -190,6 +196,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
 
   const cierreSesion = () => {
     localStorage.removeItem('token');
+    setToken(null);
     navigate('/');
   };
 
@@ -227,6 +234,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
 
       if (response.access_token) {
         localStorage.setItem('token', response.access_token);
+        setToken(response.access_token);
       }
 
       setUser(response.user || response);
@@ -248,10 +256,10 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
       const existing = prevCart.find(item => item.id === vinyl.id);
       if (existing) {
         if (existing.quantity >= vinyl.stock) {
-          showToast('No quedan más unidades', 'error');
+          showToast(t('noQuedanUnidades'), 'error');
           return prevCart;
         }
-        showToast('Añadido al carrito');
+        showToast(t('anadidoCarrito'));
         return prevCart.map(item =>
           item.id === vinyl.id
             ? { ...item, quantity: item.quantity + 1 }
@@ -259,10 +267,10 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
         );
       } else {
         if (vinyl.stock < 1) {
-          showToast('No quedan más unidades', 'error');
+          showToast(t('noQuedanUnidades'), 'error');
           return prevCart;
         }
-        showToast('Añadido al carrito');
+        showToast(t('anadidoCarrito'));
         return [...prevCart, { ...vinyl, quantity: 1 }];
       }
     });
@@ -271,7 +279,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
   const actualizarCantidad = (vinylId, newQty, stock) => {
     if (newQty < 1) return;
     if (newQty > stock) {
-      alert(`Lo sentimos, solo hay ${stock} unidades disponibles.`);
+      alert(`${t('soloQuedanParte1')}${stock}${t('soloQuedanParte2')}`);
       return;
     }
     setCart(prevCart =>
@@ -305,6 +313,25 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
     setIsCartOpen(false); // Close cart drawer
   };
 
+  const comprarYa = (vinyl) => {
+    if (vinyl.stock <= 0) {
+      showToast(t('noQuedanUnidades'), 'error');
+      return;
+    }
+
+    setCart(prevCart => {
+      const existing = prevCart.find(item => item.id === vinyl.id);
+      if (existing) {
+        return prevCart;
+      }
+      return [...prevCart, { ...vinyl, quantity: 1 }];
+    });
+
+    setSelectedVinyl(null);
+    setIsPaymentOpen(true);
+    setIsCartOpen(false);
+  };
+
   const cambioInputPago = (e) => {
     let { name, value } = e.target;
     
@@ -334,19 +361,19 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
     
     const { numero, nombre, expiracion, cvv } = paymentData;
     if (numero.replace(/\s/g, '').length !== 16) {
-      setPaymentError('El número de tarjeta debe tener 16 dígitos.');
+      setPaymentError(t('payErrorTarjeta'));
       return;
     }
     if (!nombre.trim()) {
-      setPaymentError('Por favor, ingresa el nombre del titular.');
+      setPaymentError(t('payErrorTitular'));
       return;
     }
     if (!/^\d{2}\/\d{2}$/.test(expiracion)) {
-      setPaymentError('La fecha de expiración debe tener formato MM/YY.');
+      setPaymentError(t('payErrorExp'));
       return;
     }
     if (cvv.length !== 3) {
-      setPaymentError('El código CVV debe tener 3 dígitos.');
+      setPaymentError(t('payErrorCvv'));
       return;
     }
 
@@ -365,7 +392,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
         }))
       };
 
-      const response = await fetchApi('/pedido', {
+      await fetchApi('/pedido', {
         method: 'POST',
         body: JSON.stringify(payload)
       });
@@ -396,7 +423,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
 
   // Filter vinyls dynamically
   const filteredVinyls = vinyls.filter(vinyl => {
-    const matchesCategory = activeCategory === 'Todos' || (vinyl.categoria && vinyl.categoria.nombre === activeCategory);
+    const matchesCategory = activeCategory === 'Todos' || activeCategory === 'All' || (vinyl.categoria && vinyl.categoria.nombre === activeCategory);
     
     const q = searchQuery.toLowerCase().trim();
     if (!q) return matchesCategory;
@@ -412,7 +439,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
     <div className="store-layout fade-in">
       {/* Header/Navbar */}
       <header className="store-navbar">
-        <button className="store-brand" onClick={() => { setActiveView('store'); setIsMobileMenuOpen(false); }} title="Ir a la tienda">
+        <button className="store-brand" onClick={() => { setActiveView('store'); setIsMobileMenuOpen(false); }} title={t('volverTienda')}>
           <img src={logo} alt="VinyLab Logo" className="store-logo" />
           <span className="store-title">VinyLab</span>
         </button>
@@ -423,7 +450,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
             type="button"
             className="nav-btn nav-btn-relative"
             onClick={() => { setIsCartOpen(true); setIsMobileMenuOpen(false); }}
-            title="Ver Carrito de Compras"
+            title={t('verCarrito')}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="9" cy="21" r="1"></circle>
@@ -442,7 +469,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
               type="button"
               className="nav-btn"
               onClick={toggleTheme}
-              title={isDarkMode ? 'Cambiar a Modo Día' : 'Cambiar a Modo Noche'}
+              title={isDarkMode ? t('modoDia') : t('modoNoche')}
             >
               {isDarkMode ? (
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -468,7 +495,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
               <button 
                 className={`user-avatar-btn ${isDropdownOpen ? 'active' : ''}`}
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                title="Mi Cuenta"
+                title={t('miCuenta')}
               >
                 <svg className="user-avatar-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -480,7 +507,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                 <div className="user-dropdown-menu">
                   <div className="dropdown-user-info">
                     <div className="dropdown-user-name">
-                      {loadingUser ? 'Cargando...' : user ? user.nombre : 'Cliente VinyLab'}
+                      {loadingUser ? t('cargando') : user ? user.nombre : t('cliente')}
                     </div>
                   </div>
                   
@@ -491,7 +518,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                       setIsDropdownOpen(false);
                     }}
                   >
-                    Historial de pedidos
+                    {t('historialPedidos')}
                   </button>
 
                   <button 
@@ -501,14 +528,14 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                       setIsDropdownOpen(false);
                     }}
                   >
-                    Configuración
+                    {t('configuracion')}
                   </button>
 
 
                   <div className="dropdown-divider"></div>
 
                   <button className="dropdown-item logout" onClick={cierreSesion}>
-                    Cerrar Sesión
+                    {t('cerrarSesion')}
                   </button>
                 </div>
               )}
@@ -520,7 +547,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
             type="button"
             className={`nav-btn hamburger-btn ${isMobileMenuOpen ? 'active' : ''}`}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            title="Menú de Navegación"
+            title={t('menu')}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               {isMobileMenuOpen ? (
@@ -545,12 +572,12 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
         <div className="mobile-menu-overlay" onClick={() => setIsMobileMenuOpen(false)}>
           <nav className="mobile-menu-drawer" onClick={(e) => e.stopPropagation()} aria-label="Navegación móvil">
             <div className="mobile-menu-header">
-              <h2 className="mobile-menu-title">Menú</h2>
+              <h2 className="mobile-menu-title">{t('menu')}</h2>
               <button 
                 type="button" 
                 className="btn-close-menu" 
                 onClick={() => setIsMobileMenuOpen(false)}
-                title="Cerrar Menú"
+                title={t('payCancelar')}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -561,7 +588,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
             
             <div className="mobile-menu-body">
               <div className="mobile-user-name">
-                {loadingUser ? 'Cargando...' : user ? user.nombre : 'Cliente VinyLab'}
+                {loadingUser ? t('cargando') : user ? user.nombre : t('cliente')}
               </div>
 
               <div className="mobile-menu-items">
@@ -572,7 +599,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                     setIsMobileMenuOpen(false);
                   }}
                 >
-                  Catálogo de Vinilos
+                  {t('catalogo')}
                 </button>
 
                 <button 
@@ -582,7 +609,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                     setIsMobileMenuOpen(false);
                   }}
                 >
-                  Historial de pedidos
+                  {t('historialPedidos')}
                 </button>
 
                 <button 
@@ -592,19 +619,19 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                     setIsMobileMenuOpen(false);
                   }}
                 >
-                  Configuración
+                  {t('configuracion')}
                 </button>
 
                 <div className="mobile-menu-divider"></div>
 
                 {/* Theme Toggle row inside mobile menu */}
                 <div className="mobile-theme-row">
-                  <span>Modo {isDarkMode ? 'Día' : 'Noche'}</span>
+                  <span>{idioma === 'es' ? `Modo ${isDarkMode ? 'Día' : 'Noche'}` : `Mode ${isDarkMode ? 'Day' : 'Night'}`}</span>
                   <button
                     type="button"
                     className="nav-btn"
                     onClick={toggleTheme}
-                    title={isDarkMode ? 'Cambiar a Modo Día' : 'Cambiar a Modo Noche'}
+                    title={isDarkMode ? t('modoDia') : t('modoNoche')}
                   >
                     {isDarkMode ? (
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -629,7 +656,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                 <div className="mobile-menu-divider"></div>
 
                 <button className="mobile-menu-item logout" onClick={() => { cierreSesion(); setIsMobileMenuOpen(false); }}>
-                  Cerrar Sesión
+                  {t('cerrarSesion')}
                 </button>
               </div>
             </div>
@@ -642,7 +669,12 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
           className="store-welcome-banner-full" 
           style={{ '--welcome-banner-url': `url(${welcomeGif})` }}
         >
-          <h1 className="welcome-title">¡Hola{user ? `, ${user.nombre}` : ''}! Bienvenido a VinyLab</h1>
+          <h1 className="welcome-title">
+            {idioma === 'es' 
+              ? `¡Hola${user ? `, ${user.nombre}` : ''}! Bienvenido a VinyLab`
+              : `Hello${user ? `, ${user.nombre}` : ''}! Welcome to VinyLab`
+            }
+          </h1>
         </section>
       )}
 
@@ -660,7 +692,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                 </svg>
                 <input
                   type="text"
-                  placeholder="Buscar vinilo, artista o año..."
+                  placeholder={t('buscarPlaceholder')}
                   className="search-input"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -674,7 +706,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                     className={`category-tag ${activeCategory === cat ? 'active' : ''}`}
                     onClick={() => setActiveCategory(cat)}
                   >
-                    {cat}
+                    {cat === 'Todos' ? t('todos') : cat}
                   </button>
                 ))}
               </div>
@@ -709,11 +741,8 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                   </svg>
                 </div>
 
-                <h2 className="empty-store-title">El catálogo está en preparación</h2>
-                <p className="empty-store-text">
-                  Actualmente no hay vinilos disponibles en nuestra base de datos.
-                  Nuestros curadores musicales y administradores están trabajando para agregar los mejores éxitos muy pronto.
-                </p>
+                <h2 className="empty-store-title">{t('preparacion')}</h2>
+                <p className="empty-store-text">{t('noVinilos')}</p>
                 
                 <button 
                   type="button" 
@@ -721,29 +750,31 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                   onClick={actualizarTienda}
                   disabled={isRefreshing}
                 >
-                  {isRefreshing ? 'Actualizando catálogo...' : '🔄 Comprobar Novedades'}
+                  {isRefreshing ? t('actualizando') : t('comprobarNovedades')}
                 </button>
               </div>
             ) : filteredVinyls.length === 0 ? (
               <div className="empty-store-container fade-in compact">
-                <h2 className="empty-store-title">Sin resultados</h2>
-                <p className="empty-store-text">
-                  No hemos encontrado ningún vinilo que coincida con tus filtros actuales o tu criterio de búsqueda.
-                </p>
+                <h2 className="empty-store-title">{t('sinResultados')}</h2>
+                <p className="empty-store-text">{t('sinResultadosTexto')}</p>
                 <button 
                   type="button" 
                   className="btn-accent" 
                   onClick={() => { setSearchQuery(''); setActiveCategory('Todos'); }}
                 >
-                  Limpiar Filtros
+                  {t('limpiarFiltros')}
                 </button>
               </div>
             ) : (
-              <section className="vinyl-grid fade-in" aria-label="Catálogo de Vinilos">
+              <section className="vinyl-grid fade-in" aria-label={t('catalogo')}>
                 {filteredVinyls.map(vinyl => (
                   <article key={vinyl.id} className="vinyl-card">
-                    <div className="vinyl-cover-container">
-                      <span className="vinyl-category-badge">{vinyl.categoria ? vinyl.categoria.nombre : 'General'}</span>
+                    <div 
+                      className="vinyl-cover-container" 
+                      onClick={() => setSelectedVinyl(vinyl)} 
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <span className="vinyl-category-badge">{vinyl.categoria ? vinyl.categoria.nombre : (idioma === 'es' ? 'General' : 'General')}</span>
                       {vinyl.portada ? (
                         <img 
                           src={vinyl.portada} 
@@ -756,16 +787,20 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                       )}
                     </div>
                     
-                    <div className="vinyl-info">
+                    <div 
+                      className="vinyl-info" 
+                      onClick={() => setSelectedVinyl(vinyl)} 
+                      style={{ cursor: 'pointer' }}
+                    >
                       <h3 className="vinyl-card-title" title={vinyl.titulo}>{vinyl.titulo}</h3>
-                      <p className="vinyl-card-artist">{vinyl.artista ? vinyl.artista.nombre : 'Artista Desconocido'}</p>
+                      <p className="vinyl-card-artist">{vinyl.artista ? vinyl.artista.nombre : (idioma === 'es' ? 'Artista Desconocido' : 'Unknown Artist')}</p>
                       
                       <div className="vinyl-card-meta">
                         <span className="vinyl-card-year">{vinyl.anioLanzamiento}</span>
                         {vinyl.stock <= 0 ? (
-                          <span className="vinyl-stock-badge out-of-stock">Agotado</span>
+                          <span className="vinyl-stock-badge out-of-stock">{t('agotado')}</span>
                         ) : vinyl.stock <= 3 ? (
-                          <span className="vinyl-stock-badge low-stock">¡Últimas unidades!</span>
+                          <span className="vinyl-stock-badge low-stock">{t('ultimasUnidades')}</span>
                         ) : null}
                       </div>
                     </div>
@@ -777,7 +812,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                         className="btn-add-cart" 
                         onClick={() => agregarAlCarrito(vinyl)}
                         disabled={vinyl.stock <= 0}
-                        title={vinyl.stock <= 0 ? 'Agotado' : 'Añadir al carrito'}
+                        title={vinyl.stock <= 0 ? t('agotado') : t('anadirCarrito')}
                       >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <circle cx="9" cy="21" r="1"></circle>
@@ -793,10 +828,10 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
           </div>
         ) : activeView === 'orders' ? (
           /* My Orders View */
-          <section className="orders-view-container fade-in" aria-label="Historial de Pedidos">
+          <section className="orders-view-container fade-in" aria-label={t('pedidosTitulo')}>
             <header className="orders-view-header">
-              <h2 className="orders-view-title">Historial de pedidos</h2>
-              <p className="orders-view-subtitle">Consulta el historial y los detalles de tus compras en VinyLab</p>
+              <h2 className="orders-view-title">{t('pedidosTitulo')}</h2>
+              <p className="orders-view-subtitle">{t('pedidosSub')}</p>
             </header>
             
             {loadingOrders ? (
@@ -814,22 +849,20 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
             ) : orders.length === 0 ? (
               <div className="empty-orders-container fade-in">
                 <div className="empty-orders-icon">📋</div>
-                <h3 className="empty-orders-title">No tienes pedidos</h3>
-                <p className="empty-orders-text">
-                  Aún no has realizado ninguna compra en VinyLab. Explora nuestro catálogo y agrega tus vinilos favoritos para realizar tu primer pedido.
-                </p>
+                <h3 className="empty-orders-title">{t('noPedidos')}</h3>
+                <p className="empty-orders-text">{t('noPedidosTexto')}</p>
                 <button 
                   type="button" 
                   className="btn-secondary-outline btn-width-limit" 
                   onClick={() => setActiveView('store')}
                 >
-                  Ir a la Tienda
+                  {t('volverTienda')}
                 </button>
               </div>
             ) : (
               <div className="orders-list fade-in">
                 {orders.map(order => {
-                  const orderDate = new Date(order.fechaCreacion).toLocaleDateString('es-ES', {
+                  const orderDate = new Date(order.fechaCreacion).toLocaleDateString(idioma === 'es' ? 'es-ES' : 'en-US', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
@@ -841,21 +874,21 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                     <article key={order.id} className="order-card">
                       <div className="order-card-header">
                         <div className="order-header-meta">
-                          <span className="order-meta-label">Pedido</span>
+                          <span className="order-meta-label">{t('pedidoLabel')}</span>
                           <span className="order-meta-value order-id">#{order.id}</span>
                         </div>
                         <div className="order-header-meta">
-                          <span className="order-meta-label">Fecha</span>
+                          <span className="order-meta-label">{t('fechaLabel')}</span>
                           <span className="order-meta-value">{orderDate}</span>
                         </div>
                         <div className="order-header-meta">
-                          <span className="order-meta-label">Total</span>
+                          <span className="order-meta-label">{t('totalLabel')}</span>
                           <span className="order-meta-value">{parseFloat(order.importeTotal).toFixed(2)} €</span>
                         </div>
                         <div className="order-header-meta order-header-meta-wide">
-                          <span className="order-meta-label">Estado</span>
+                          <span className="order-meta-label">{t('estadoLabel')}</span>
                           <span className={`order-status-badge ${order.estado.toLowerCase()}`}>
-                            {order.estado === 'PAGADO' || order.estado === 'pagado' || order.estado === 'PENDIENTE_ENVIO' || order.estado === 'pendiente_envio' ? 'Pendiente de envío' : order.estado}
+                            {order.estado === 'PAGADO' || order.estado === 'pagado' || order.estado === 'PENDIENTE_ENVIO' || order.estado === 'pendiente_envio' ? t('pendienteEnvio') : order.estado}
                           </span>
                         </div>
                       </div>
@@ -881,14 +914,14 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                                 </div>
                                 <div className="order-item-details">
                                   <div className="order-item-title-artist">
-                                    <h4 className="order-item-title">{detail.vinilo ? detail.vinilo.titulo : 'Vinilo Eliminado'}</h4>
-                                    <p className="order-item-artist">{detail.vinilo && detail.vinilo.artista ? detail.vinilo.artista.nombre : 'Artista Desconocido'}</p>
+                                    <h4 className="order-item-title">{detail.vinilo ? detail.vinilo.titulo : (idioma === 'es' ? 'Vinilo Eliminado' : 'Deleted Vinyl')}</h4>
+                                    <p className="order-item-artist">{detail.vinilo && detail.vinilo.artista ? detail.vinilo.artista.nombre : (idioma === 'es' ? 'Artista Desconocido' : 'Unknown Artist')}</p>
                                   </div>
                                   <div className="order-item-price-unit">
-                                    {unitPrice.toFixed(2)} € / ud.
+                                    {unitPrice.toFixed(2)} € / {idioma === 'es' ? 'ud.' : 'unit'}
                                   </div>
                                   <div className="order-item-quantity">
-                                    Cantidad: {detail.cantidad}
+                                    {t('cantidadLabel')}: {detail.cantidad}
                                   </div>
                                   <div className="order-item-subtotal">
                                     {subtotal.toFixed(2)} €
@@ -901,7 +934,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                       </div>
                       
                       <div className="order-card-footer">
-                        <span className="order-total-label">Total pagado:</span>
+                        <span className="order-total-label">{t('totalPagadoLabel')}</span>
                         <span className="order-total-price">{parseFloat(order.importeTotal).toFixed(2)} €</span>
                       </div>
                     </article>
@@ -912,25 +945,25 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
           </section>
         ) : (
           /* Profile Configuration View */
-          <section className="profile-view-container fade-in" aria-label="Configuración de Perfil">
+          <section className="profile-view-container fade-in" aria-label={t('profileTitulo')}>
             <article className="profile-card">
               <header className="profile-card-header">
-                <h2 className="profile-card-title">Configuración de Usuario</h2>
-                <p className="profile-card-subtitle">Administra y actualiza la información de tu perfil de VinyLab</p>
+                <h2 className="profile-card-title">{t('profileTitulo')}</h2>
+                <p className="profile-card-subtitle">{t('profileSub')}</p>
               </header>
 
               {profileError && <div className="error-message fade-in spaced-error">{profileError}</div>}
-              {profileSuccess && <div className="success-message fade-in spaced-success">{profileSuccess}</div>}
+              {profileSuccess && <div className="success-message fade-in spaced-success">{t('profileExito')}</div>}
 
               <form onSubmit={enviarPerfil}>
                 <div className="form-group">
-                  <label className="form-label" htmlFor="profile-nombre">Nombre Completo</label>
+                  <label className="form-label" htmlFor="profile-nombre">{t('profileNombre')}</label>
                   <input
                     type="text"
                     id="profile-nombre"
                     name="nombre"
                     className="form-input"
-                    placeholder="Tu nombre completo"
+                    placeholder={t('nombrePlaceholder')}
                     value={profileData.nombre}
                     onChange={cambioPerfil}
                     required
@@ -938,13 +971,13 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                 </div>
 
                  <div className="form-group">
-                  <label className="form-label" htmlFor="profile-email">Correo Electrónico</label>
+                  <label className="form-label" htmlFor="profile-email">{t('profileEmail')}</label>
                   <input
                     type="email"
                     id="profile-email"
                     name="email"
                     className="form-input"
-                    placeholder="Tu correo electrónico"
+                    placeholder={t('emailPlaceholder')}
                     value={profileData.email}
                     onChange={cambioPerfil}
                     required
@@ -952,26 +985,26 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label" htmlFor="profile-direccion">Dirección de Envío</label>
+                  <label className="form-label" htmlFor="profile-direccion">{t('profileDireccion')}</label>
                   <input
                     type="text"
                     id="profile-direccion"
                     name="direccion"
                     className="form-input"
-                    placeholder="Tu dirección de envío física"
+                    placeholder={t('profileDireccionPlaceholder')}
                     value={profileData.direccion}
                     onChange={cambioPerfil}
                   />
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label" htmlFor="profile-contrasena">Nueva Contraseña</label>
+                  <label className="form-label" htmlFor="profile-contrasena">{t('profileContrasena')}</label>
                   <input
                     type="password"
                     id="profile-contrasena"
                     name="contrasena"
                     className="form-input"
-                    placeholder="•••••••• (dejar en blanco para no cambiar)"
+                    placeholder={t('profileContrasenaPlaceholder')}
                     value={profileData.contrasena}
                     onChange={cambioPerfil}
                   />
@@ -983,7 +1016,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                     className="btn-primary btn-flex-no-margin" 
                     disabled={savingProfile}
                   >
-                    {savingProfile ? 'Guardando...' : 'Guardar Cambios'}
+                    {savingProfile ? t('profileGuardando') : t('profileGuardar')}
                   </button>
                 </div>
               </form>
@@ -995,20 +1028,20 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
       {/* Shopping Cart Drawer */}
       {isCartOpen && (
         <div className="cart-drawer-overlay" onClick={() => setIsCartOpen(false)}>
-          <aside className="cart-drawer" onClick={(e) => e.stopPropagation()} aria-label="Carrito de compras">
+          <aside className="cart-drawer" onClick={(e) => e.stopPropagation()} aria-label={t('cartTitulo')}>
             <header className="cart-drawer-header">
               <div className="cart-drawer-header-left">
                 <h2 className="cart-drawer-title">
-                  Tu carrito
+                  {t('cartTitulo')}
                 </h2>
                 {cart.length > 0 && (
                   <button 
                     type="button" 
                     className="btn-clear-cart" 
                     onClick={vaciarCarrito}
-                    title="Vaciar carrito"
+                    title={t('cartVaciar')}
                   >
-                    Vaciar
+                    {t('cartVaciar')}
                   </button>
                 )}
               </div>
@@ -1016,7 +1049,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                 type="button" 
                 className="btn-close-cart" 
                 onClick={() => setIsCartOpen(false)}
-                title="Cerrar Carrito"
+                title={t('payCancelar')}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -1029,8 +1062,8 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
               {cart.length === 0 ? (
                 <div className="cart-empty-state">
                   <div className="cart-empty-vinyl">💿</div>
-                  <h3>Tu carrito está vacío</h3>
-                  <p>Parece que aún no has agregado nada. ¡Explora nuestro catálogo y llévate tu música favorita!</p>
+                  <h3>{t('cartVacio')}</h3>
+                  <p>{t('cartVacioTexto')}</p>
                 </div>
               ) : (
                 cart.map(item => (
@@ -1049,7 +1082,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                     
                     <div className="cart-item-info">
                       <h4 className="cart-item-title" title={item.titulo}>{item.titulo}</h4>
-                      <p className="cart-item-artist">{item.artista ? item.artista.nombre : 'Artista'}</p>
+                      <p className="cart-item-artist">{item.artista ? item.artista.nombre : (idioma === 'es' ? 'Artista' : 'Artist')}</p>
                       <span className="cart-item-price">{parseFloat(item.precio).toFixed(2)} €</span>
                     </div>
                     
@@ -1058,7 +1091,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                         type="button" 
                         className="btn-remove-item"
                         onClick={() => eliminarDelCarrito(item.id)}
-                        title="Eliminar producto"
+                        title={t('cartEliminarItem')}
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="3 6 5 6 21 6"></polyline>
@@ -1094,7 +1127,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
             {cart.length > 0 && (
               <div className="cart-drawer-footer">
                 <div className="cart-totals-row">
-                  <span className="cart-totals-label">Total ({cartItemCount} {cartItemCount === 1 ? 'artículo' : 'artículos'}):</span>
+                  <span className="cart-totals-label">{t('cartTotalLabel')} ({cartItemCount} {cartItemCount === 1 ? t('cartArticulo') : t('cartArticulos')}):</span>
                   <span className="cart-totals-value">{cartTotal.toFixed(2)} €</span>
                 </div>
                 <button 
@@ -1102,7 +1135,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                   className="btn-checkout"
                   onClick={abrirPasarelaPago}
                 >
-                  Completar Compra
+                  {t('cartComprar')}
                 </button>
               </div>
             )}
@@ -1122,7 +1155,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                     <path className="success-checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
                   </svg>
                 </div>
-                <h2>¡Pago exitoso!</h2>
+                <h2>{t('payExitoso')}</h2>
               </div>
             ) : (
               <div className="payment-modal-body">
@@ -1131,7 +1164,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                   className="btn-close-payment" 
                   onClick={() => setIsPaymentOpen(false)}
                   disabled={isProcessingPayment}
-                  title="Cancelar y cerrar"
+                  title={t('payCancelar')}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -1141,7 +1174,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
 
                 <div className="payment-layout-cols">
                   <div className="payment-card-preview-col">
-                    <h3>Resumen de Pago</h3>
+                    <h3>{t('payResumen')}</h3>
 
                     {/* Breakdown with details of the order */}
                     <div className="payment-order-details">
@@ -1161,7 +1194,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                           <div className="payment-detail-info">
                             <h4 className="payment-detail-title" title={item.titulo}>{item.titulo}</h4>
                             <p className="payment-detail-artist-qty">
-                              {item.artista ? item.artista.nombre : 'Artista'} • Cantidad: {item.quantity}
+                              {item.artista ? item.artista.nombre : (idioma === 'es' ? 'Artista' : 'Artist')} • {t('cantidadLabel')}: {item.quantity}
                             </p>
                           </div>
                           <div className="payment-detail-subtotal">
@@ -1173,14 +1206,14 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
 
                     <div className="payment-summary-box">
                       <div className="summary-row total">
-                        <span>Total a Pagar:</span>
+                        <span>{t('payTotalPagar')}</span>
                         <span>{cartTotal.toFixed(2)} €</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="payment-form-col">
-                    <h2>Introduce tu tarjeta</h2>
+                    <h2>{t('payIntroduceTarjeta')}</h2>
 
                     {paymentError && (
                       <div className="error-message payment-error-alert fade-in">
@@ -1190,7 +1223,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
 
                     <form onSubmit={enviarPago}>
                       <div className="form-group">
-                        <label className="form-label" htmlFor="card-nombre">Nombre del Titular</label>
+                        <label className="form-label" htmlFor="card-nombre">{t('payNombreTitular')}</label>
                         <input
                           type="text"
                           id="card-nombre"
@@ -1205,7 +1238,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                       </div>
 
                       <div className="form-group">
-                        <label className="form-label" htmlFor="card-numero">Número de Tarjeta</label>
+                        <label className="form-label" htmlFor="card-numero">{t('payNumeroTarjeta')}</label>
                         <input
                           type="text"
                           id="card-numero"
@@ -1221,7 +1254,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
 
                       <div className="form-row-two-cols">
                         <div className="form-group">
-                          <label className="form-label" htmlFor="card-expiracion">Vencimiento</label>
+                          <label className="form-label" htmlFor="card-expiracion">{t('payVencimiento')}</label>
                           <input
                             type="text"
                             id="card-expiracion"
@@ -1236,7 +1269,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                         </div>
 
                         <div className="form-group">
-                          <label className="form-label" htmlFor="card-cvv">CVV</label>
+                          <label className="form-label" htmlFor="card-cvv">{t('payCvv')}</label>
                           <input
                             type="password"
                             id="card-cvv"
@@ -1258,7 +1291,7 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                           onClick={() => setIsPaymentOpen(false)}
                           disabled={isProcessingPayment}
                         >
-                          Cancelar
+                          {t('payCancelar')}
                         </button>
                         <button
                           type="submit"
@@ -1268,10 +1301,10 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                           {isProcessingPayment ? (
                             <span className="spinner-loader-row">
                               <span className="payment-spinner"></span>
-                              Verificando...
+                              {t('payVerificando')}
                             </span>
                           ) : (
-                            `Pagar ${cartTotal.toFixed(2)} €`
+                            `${t('payPagarBoton')} ${cartTotal.toFixed(2)} €`
                           )}
                         </button>
                       </div>
@@ -1280,6 +1313,108 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Vinyl Details Modal Overlay */}
+      {selectedVinyl && (
+        <div className="detail-modal-overlay" onClick={() => setSelectedVinyl(null)}>
+          <div 
+            className="detail-modal-card fade-in" 
+            onClick={(e) => e.stopPropagation()}
+            style={{ '--modal-bg-image': selectedVinyl.portada ? `url(${selectedVinyl.portada})` : 'none' }}
+          >
+            <button 
+              type="button" 
+              className="btn-close-detail" 
+              onClick={() => setSelectedVinyl(null)}
+              title={t('payCancelar')}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            
+            <div className="detail-layout-cols">
+              {/* Left Column: Vinyl Cover Sleeve with Slide Out Record */}
+              <div className="detail-cover-col">
+                <div className="detail-cover-wrapper">
+                  {selectedVinyl.portada ? (
+                    <img 
+                      src={selectedVinyl.portada} 
+                      alt={selectedVinyl.titulo} 
+                      className="detail-cover-img" 
+                      onError={(e) => { e.target.src = FALLBACK_SVG; }}
+                    />
+                  ) : (
+                    <div className="detail-fallback-cover">💿</div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Right Column: Detailed Information */}
+              <div className="detail-info-col">
+                <div className="detail-header-section">
+                  <span className="detail-category-badge">
+                    {selectedVinyl.categoria ? selectedVinyl.categoria.nombre : (idioma === 'es' ? 'General' : 'General')}
+                  </span>
+                  <h2 className="detail-title" title={selectedVinyl.titulo}>{selectedVinyl.titulo}</h2>
+                  <h3 className="detail-artist">
+                    {selectedVinyl.artista ? selectedVinyl.artista.nombre : (idioma === 'es' ? 'Artista Desconocido' : 'Unknown Artist')}
+                  </h3>
+                </div>
+                
+                <div className="detail-meta-grid">
+                  <div className="detail-meta-item">
+                    <span className="detail-meta-label">{t('anio')}</span>
+                    <span className="detail-meta-value">{selectedVinyl.anioLanzamiento}</span>
+                  </div>
+                </div>
+                
+                <div className="detail-description-section">
+                  <p className="detail-description-text">
+                    {selectedVinyl.descripcion || (idioma === 'es' ? 'Sin descripción disponible.' : 'No description available.')}
+                  </p>
+                </div>
+                
+                <div className="detail-price-section">
+                  <span className="detail-price-label">{t('precio')}</span>
+                  <span className="detail-price-value">{parseFloat(selectedVinyl.precio).toFixed(2)} €</span>
+                </div>
+                
+                <div className="detail-actions-row">
+                  <button 
+                    type="button" 
+                    className="btn-add-cart-detail" 
+                    onClick={() => {
+                      agregarAlCarrito(selectedVinyl);
+                      setSelectedVinyl(null);
+                    }}
+                    disabled={selectedVinyl.stock <= 0}
+                    title={selectedVinyl.stock <= 0 ? t('agotado') : t('anadirCarrito')}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="9" cy="21" r="1"></circle>
+                      <circle cx="20" cy="21" r="1"></circle>
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    <span>{t('anadirCarrito')}</span>
+                  </button>
+                  
+                  <button 
+                    type="button" 
+                    className="btn-buy-now-detail" 
+                    onClick={() => comprarYa(selectedVinyl)}
+                    disabled={selectedVinyl.stock <= 0}
+                    title={selectedVinyl.stock <= 0 ? t('agotado') : t('comprarYa')}
+                  >
+                    <span>{t('comprarYa')}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -1302,6 +1437,8 @@ const Tienda = ({ toggleTheme, isDarkMode }) => {
           <span className="toast-text">{toast.message}</span>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 };

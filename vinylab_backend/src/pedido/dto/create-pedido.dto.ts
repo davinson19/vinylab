@@ -4,8 +4,23 @@ import {
   IsInt,
   IsNumber,
   IsOptional,
+  IsArray,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class PedidoItemDto {
+  @IsInt()
+  @IsNotEmpty()
+  @Min(1)
+  viniloId: number;
+
+  @IsInt()
+  @IsNotEmpty()
+  @Min(1)
+  cantidad: number;
+}
 
 export class CreatePedidoDto {
   @IsInt()
@@ -20,5 +35,9 @@ export class CreatePedidoDto {
   @IsOptional()
   estado?: string;
 
-  vinilos?: { viniloId: number; cantidad: number }[];
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => PedidoItemDto)
+  vinilos?: PedidoItemDto[];
 }

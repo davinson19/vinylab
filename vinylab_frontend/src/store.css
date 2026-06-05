@@ -1411,9 +1411,7 @@
 .payment-modal-card {
   width: 100%;
   max-width: 900px;
-  background: var(--surface);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
+  background: #121212;
   border: 1px solid var(--surface-border);
   border-radius: 28px;
   box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.4);
@@ -1421,6 +1419,10 @@
   position: relative;
   transition: all 0.3s ease;
   margin: auto;
+}
+
+.light-mode .payment-modal-card {
+  background: #ffffff;
 }
 
 .payment-modal-body {
@@ -2498,6 +2500,488 @@
     transform: translate(-50%, 0) scale(1);
   }
 }
+
+/* Footer Styles */
+.store-footer {
+  background: var(--surface);
+  border-top: 1px solid var(--surface-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 1.5rem 2rem;
+  width: 100%;
+  margin-top: auto;
+  z-index: 10;
+  box-sizing: border-box;
+}
+
+.store-footer-content {
+  max-width: 1300px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.store-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.store-footer-logo {
+  height: 30px;
+  width: auto;
+  border-radius: 6px;
+}
+
+.store-footer-title {
+  font-family: 'ITC Magnifico', sans-serif;
+  color: var(--primary);
+  font-size: 1.4rem;
+  letter-spacing: 0.05em;
+}
+
+.store-footer-text {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .store-footer-content {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+/* Specific styling for footer when on Auth page */
+body.auth-page .store-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(7, 7, 7, 0.6);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.auth-page.light-mode .store-footer {
+  background: rgba(248, 250, 252, 0.8);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Footer Language Dropdown Styles */
+.store-footer-language {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--surface-border);
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.store-footer-language:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--primary);
+}
+
+.light-mode .store-footer-language {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light-mode .store-footer-language:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.language-globe-icon {
+  color: var(--text-muted);
+  transition: color 0.3s ease;
+}
+
+.store-footer-language:hover .language-globe-icon {
+  color: var(--primary);
+}
+
+.language-select {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  padding-right: 0.25rem;
+}
+
+.language-select option {
+  background: var(--background);
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   Vinyl Details Modal Styles & Micro-Animations
+   ========================================================================== */
+.detail-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: fadeIn 0.3s ease;
+  overflow-y: auto;
+}
+
+.detail-modal-card {
+  width: 100%;
+  max-width: 850px;
+  background: #121212;
+  border: 1px solid var(--surface-border);
+  border-radius: 28px;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s ease;
+  margin: auto;
+  z-index: 1;
+}
+
+.detail-modal-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: var(--modal-bg-image, none);
+  background-size: cover;
+  background-position: center;
+  filter: blur(30px);
+  transform: scale(1.1);
+  opacity: 0.45;
+  z-index: -2;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.detail-modal-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(18, 18, 18, 0.85) 0%, rgba(18, 18, 18, 0.95) 100%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.light-mode .detail-modal-card {
+  background: #ffffff;
+}
+
+.light-mode .detail-modal-card::after {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.95) 100%);
+}
+
+.btn-close-detail {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  background: transparent;
+  border: 1px solid var(--surface-border);
+  color: var(--text-muted);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.btn-close-detail:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+  border-color: rgba(239, 68, 68, 0.2);
+  transform: rotate(90deg);
+}
+
+.detail-layout-cols {
+  display: grid;
+  grid-template-columns: 1.1fr 1.5fr;
+  gap: 3.5rem;
+  padding: 3rem;
+  align-items: center;
+}
+
+/* Left Column: Cover & Vinyl Record micro-animation */
+.detail-cover-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: visible;
+}
+
+.detail-cover-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 280px;
+  z-index: 2;
+  overflow: visible;
+}
+
+.detail-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
+  position: relative;
+  z-index: 3;
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.detail-fallback-cover {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5rem;
+  border-radius: 16px;
+  background: radial-gradient(circle, #1e1e2e 0%, #11111b 100%);
+  position: relative;
+  z-index: 3;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
+}
+
+/* detail-vinyl-record-peek styles removed */
+
+/* Right Column: Information */
+.detail-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.detail-header-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detail-category-badge {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  background: rgba(204, 164, 4, 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(204, 164, 4, 0.2);
+}
+
+.detail-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.15;
+}
+
+.detail-artist {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.detail-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.detail-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-meta-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.detail-meta-value {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.detail-meta-value.low-stock {
+  color: #f59e0b;
+}
+
+.detail-meta-value.out-of-stock {
+  color: var(--error);
+}
+
+.detail-description-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detail-description-title {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.detail-description-text {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.detail-price-section {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.detail-price-label {
+  font-size: 1rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.detail-price-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.detail-actions-row {
+  display: flex;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.btn-add-cart-detail {
+  flex: 1;
+  padding: 1rem;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-add-cart-detail:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.light-mode .btn-add-cart-detail:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.btn-buy-now-detail {
+  flex: 1.2;
+  padding: 1rem;
+  background: var(--primary);
+  color: var(--primary-btn-text);
+  border: none;
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(204, 164, 4, 0.3);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-buy-now-detail:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(204, 164, 4, 0.45);
+}
+
+.btn-add-cart-detail:disabled, .btn-buy-now-detail:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive Styling for Details Modal */
+@media (max-width: 768px) {
+  .detail-layout-cols {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 2.25rem 1.5rem;
+  }
+  
+  .detail-modal-card {
+    border-radius: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  /* detail-modal-card record peek hover animation removed */
+  
+  .detail-cover-wrapper {
+    max-width: 220px;
+  }
+  
+  .detail-title {
+    font-size: 1.8rem;
+  }
+}
+
 
 
 

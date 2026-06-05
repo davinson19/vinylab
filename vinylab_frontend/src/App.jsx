@@ -46,7 +46,7 @@ function App() {
 
   const renderizarInicio = () => {
     if (!token) {
-      return <Auth toggleTheme={alternarTema} isDarkMode={isDarkMode} />;
+      return <Auth toggleTheme={alternarTema} isDarkMode={isDarkMode} setToken={setToken} />;
     }
 
     try {
@@ -54,10 +54,10 @@ function App() {
       if (payload.rolName === 'Admin') {
         return <Navigate to="/admin" replace />;
       }
-      return <Tienda toggleTheme={alternarTema} isDarkMode={isDarkMode} />;
+      return <Navigate to="/catalogo" replace />;
     } catch (e) {
       localStorage.removeItem('token');
-      return <Auth toggleTheme={alternarTema} isDarkMode={isDarkMode} />;
+      return <Auth toggleTheme={alternarTema} isDarkMode={isDarkMode} setToken={setToken} />;
     }
   };
 
@@ -65,10 +65,16 @@ function App() {
     <Routes>
       <Route path="/" element={renderizarInicio()} />
       <Route path="/admin" element={
-        <RutaProtegida>
-          <PanelControl toggleTheme={alternarTema} isDarkMode={isDarkMode} />
+        <RutaProtegida requiereAdmin={true}>
+          <PanelControl toggleTheme={alternarTema} isDarkMode={isDarkMode} setToken={setToken} />
         </RutaProtegida>
       } />
+      <Route path="/catalogo" element={
+        <RutaProtegida requiereAdmin={false}>
+          <Tienda toggleTheme={alternarTema} isDarkMode={isDarkMode} setToken={setToken} />
+        </RutaProtegida>
+      } />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

@@ -30,6 +30,7 @@ export class CreateViniloDto {
 
   @IsInt()
   @IsNotEmpty()
+  @Min(0)
   anioLanzamiento: number;
 
   @IsInt()

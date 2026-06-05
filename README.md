@@ -57,3 +57,10 @@ Vaciar la base de datos y reiniciar los IDs:
 ```bash
 npx prisma migrate reset --force
 ```
+
+
+NOTAS
+
+- Buscador con filtros de categorias y artistas
+- ¿Modal para productos con background de la portada?
+- ¿Nuevas rutas para vista de producto (con comentarios y tracklists), perfil, carrito y pago?
