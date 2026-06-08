@@ -6,14 +6,17 @@ import {
   IsNumber,
   Min,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateViniloDto {
   @IsInt()
   @IsNotEmpty()
+  @Type(() => Number)
   categoriaId: number;
 
   @IsInt()
   @IsNotEmpty()
+  @Type(() => Number)
   artistaId: number;
 
   @IsString()
@@ -26,16 +29,19 @@ export class CreateViniloDto {
 
   @IsNumber()
   @Min(0)
+  @Type(() => Number)
   precio: number;
 
   @IsInt()
   @IsNotEmpty()
   @Min(0)
+  @Type(() => Number)
   anioLanzamiento: number;
 
   @IsInt()
   @IsOptional()
   @Min(0)
+  @Type(() => Number)
   stock?: number;
 
   @IsString()

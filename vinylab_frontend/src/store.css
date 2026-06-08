@@ -1230,7 +1230,9 @@
   letter-spacing: 0.05em;
 }
 
-.order-status-badge.pagado {
+.order-status-badge.pagado,
+.order-status-badge.pendiente_envio,
+.order-status-badge.pendiente_de_envío {
   color: #d97706;
   background: rgba(217, 119, 6, 0.12);
   border: 1px solid rgba(217, 119, 6, 0.2);

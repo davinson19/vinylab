@@ -34,8 +34,8 @@ export class PedidoService {
       }
     });
 
-    // Check if the order is established as PAGADO or PENDIENTE_ENVIO (default, or explicitly set)
-    const isPaid = !createPedidoDto.estado || createPedidoDto.estado === 'PENDIENTE_ENVIO' || createPedidoDto.estado === 'PAGADO';
+    // Check if the order is established as PENDIENTE_ENVIO (default, or explicitly set)
+    const isPaid = !createPedidoDto.estado || createPedidoDto.estado === 'PENDIENTE_ENVIO';
     if (isPaid && vinilos && vinilos.length > 0) {
       for (const item of vinilos) {
         const vinilo = await this.prisma.vinilo.findUnique({
@@ -107,9 +107,9 @@ export class PedidoService {
       throw new Error('Pedido no encontrado');
     }
 
-    // 2. Check if transitioning to PAGADO or PENDIENTE_ENVIO
-    const willBePaid = updatePedidoDto.estado === 'PENDIENTE_ENVIO' || updatePedidoDto.estado === 'PAGADO';
-    const wasPaid = oldPedido.estado === 'PENDIENTE_ENVIO' || oldPedido.estado === 'PAGADO';
+    // 2. Check if transitioning to PENDIENTE_ENVIO, ENVIADO or ENTREGADO
+    const willBePaid = updatePedidoDto.estado === 'PENDIENTE_ENVIO' || updatePedidoDto.estado === 'ENVIADO' || updatePedidoDto.estado === 'ENTREGADO';
+    const wasPaid = oldPedido.estado === 'PENDIENTE_ENVIO' || oldPedido.estado === 'ENVIADO' || oldPedido.estado === 'ENTREGADO';
 
     if (willBePaid && !wasPaid) {
       // Transition to paid: subtract stock

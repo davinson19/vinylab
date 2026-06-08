@@ -9,6 +9,20 @@ import { useLanguage } from '../utils/LanguageContext';
 const FALLBACK_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="10" fill="%231e1e2e"/><circle cx="50" cy="50" r="40" fill="%230f0f15" stroke="%23313244" stroke-width="2"/><circle cx="50" cy="50" r="30" fill="none" stroke="%2345475a" stroke-dasharray="8,6" stroke-width="1"/><circle cx="50" cy="50" r="20" fill="none" stroke="%2345475a" stroke-dasharray="6,4" stroke-width="1"/><circle cx="50" cy="50" r="12" fill="%23cba6f7"/><circle cx="50" cy="50" r="4" fill="%230f0f15"/></svg>`;
 
 
+const formatStatus = (status, t) => {
+  const normalized = status ? status.toLowerCase() : '';
+  if (normalized === 'pendiente_envio' || normalized === 'pendiente de envío' || normalized === 'pagado') {
+    return t('pendienteEnvio');
+  }
+  if (normalized === 'enviado') {
+    return t('enviado');
+  }
+  if (normalized === 'entregado') {
+    return t('entregado');
+  }
+  return status;
+};
+
 const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
@@ -358,7 +372,15 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
   const enviarPago = async (e) => {
     e.preventDefault();
     setPaymentError('');
-    
+
+    console.log("enviarPago: token =", token);
+    console.log("enviarPago: userId =", userId);
+
+    if (!userId) {
+      setPaymentError('No se pudo identificar al usuario logueado. Por favor, cierre sesión e inicie sesión de nuevo.');
+      return;
+    }
+
     const { numero, nombre, expiracion, cvv } = paymentData;
     if (numero.replace(/\s/g, '').length !== 16) {
       setPaymentError(t('payErrorTarjeta'));
@@ -384,8 +406,9 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       const payload = {
+        usuarioId: Number(userId),
         importeTotal: parseFloat(cartTotal.toFixed(2)),
-        estado: 'PAGADO',
+        estado: 'PENDIENTE_ENVIO',
         vinilos: cart.map(item => ({
           viniloId: item.id,
           cantidad: item.quantity
@@ -888,7 +911,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
                         <div className="order-header-meta order-header-meta-wide">
                           <span className="order-meta-label">{t('estadoLabel')}</span>
                           <span className={`order-status-badge ${order.estado.toLowerCase()}`}>
-                            {order.estado === 'PAGADO' || order.estado === 'pagado' || order.estado === 'PENDIENTE_ENVIO' || order.estado === 'pendiente_envio' ? t('pendienteEnvio') : order.estado}
+                            {formatStatus(order.estado, t)}
                           </span>
                         </div>
                       </div>

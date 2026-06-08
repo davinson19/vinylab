@@ -67,6 +67,8 @@ const translations = {
     totalLabel: "Total",
     estadoLabel: "Estado",
     pendienteEnvio: "Pendiente de envío",
+    enviado: "Enviado",
+    entregado: "Entregado",
     cantidadLabel: "Cantidad",
     totalPagadoLabel: "Total pagado:",
     
@@ -183,6 +185,8 @@ const translations = {
     totalLabel: "Total",
     estadoLabel: "Status",
     pendienteEnvio: "Pending shipment",
+    enviado: "Shipped",
+    entregado: "Delivered",
     cantidadLabel: "Quantity",
     totalPagadoLabel: "Total paid:",
     

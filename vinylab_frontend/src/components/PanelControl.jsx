@@ -127,7 +127,29 @@ const PanelControl = ({ toggleTheme, isDarkMode, setToken }) => {
           { key: 'id', label: 'ID' },
           { key: 'usuarioId', label: 'Usuario', type: 'select', selectEndpoint: 'usuario', optionLabel: 'nombre', render: (row) => row.usuario ? row.usuario.nombre : row.usuarioId },
           { key: 'importeTotal', label: 'Importe Total', type: 'number', render: (row) => `${parseFloat(row.importeTotal).toFixed(2)} €` },
-          { key: 'estado', label: 'Estado', render: (row) => row.estado === 'PAGADO' || row.estado === 'pagado' || row.estado === 'PENDIENTE_ENVIO' || row.estado === 'pendiente_envio' ? 'Pendiente de envío' : row.estado },
+          { 
+            key: 'estado', 
+            label: 'Estado', 
+            type: 'select', 
+            options: [
+              { value: 'PENDIENTE_ENVIO', label: 'Pendiente de envío' },
+              { value: 'ENVIADO', label: 'Enviado' },
+              { value: 'ENTREGADO', label: 'Entregado' }
+            ], 
+            render: (row) => {
+              const status = row.estado ? row.estado.toLowerCase() : '';
+              if (status === 'pendiente_envio' || status === 'pendiente de envío' || status === 'pagado') {
+                return 'Pendiente de envío';
+              }
+              if (status === 'enviado') {
+                return 'Enviado';
+              }
+              if (status === 'entregado') {
+                return 'Entregado';
+              }
+              return row.estado;
+            }
+          },
           { key: 'fechaCreacion', label: 'Fecha Creación', hideInForm: true, render: (row) => new Date(row.fechaCreacion).toLocaleString('es-ES') },
         ]}
         expandableRowRender={(pedido) => {

@@ -60,7 +60,6 @@ npx prisma migrate reset --force
 
 
 NOTAS
-
+- Arreglar formulario edicion vinilos, carrito y revisar los demas
 - Buscador con filtros de categorias y artistas
-- ¿Modal para productos con background de la portada?
 - ¿Nuevas rutas para vista de producto (con comentarios y tracklists), perfil, carrito y pago?

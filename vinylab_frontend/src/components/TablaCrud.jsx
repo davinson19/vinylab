@@ -197,12 +197,16 @@ const TablaCrud = ({ endpoint, columns, title, formTitle, canAdd = true, expanda
     const fetchOptions = async () => {
       const optionsData = {};
       for (const col of columns) {
-        if (col.type === 'select' && col.selectEndpoint) {
-          try {
-            const data = await fetchApi(`/${col.selectEndpoint}`);
-            optionsData[col.key] = data;
-          } catch (err) {
-            console.error(`Error fetching options for ${col.key}:`, err);
+        if (col.type === 'select') {
+          if (col.options) {
+            optionsData[col.key] = col.options;
+          } else if (col.selectEndpoint) {
+            try {
+              const data = await fetchApi(`/${col.selectEndpoint}`);
+              optionsData[col.key] = data;
+            } catch (err) {
+              console.error(`Error fetching options for ${col.key}:`, err);
+            }
           }
         }
       }
@@ -225,6 +229,14 @@ const TablaCrud = ({ endpoint, columns, title, formTitle, canAdd = true, expanda
       setEditingId(item.id);
       const copy = { ...item };
       delete copy.contrasena;
+      
+      // Parse numeric fields to avoid sending them as strings if they are not edited
+      columns.forEach(col => {
+        if (col.type === 'number' && copy[col.key] !== undefined && copy[col.key] !== null && copy[col.key] !== '') {
+          copy[col.key] = Number(copy[col.key]);
+        }
+      });
+      
       setFormData(copy);
     } else {
       setEditingId(null);
@@ -245,7 +257,8 @@ const TablaCrud = ({ endpoint, columns, title, formTitle, canAdd = true, expanda
     
     const col = columns.find(c => c.key === name);
     if (col && col.type === 'select') {
-      parsedValue = value === '' ? '' : Number(value);
+      const numVal = Number(value);
+      parsedValue = value === '' ? '' : (isNaN(numVal) ? value : numVal);
     } else if (type === 'number') {
       parsedValue = value === '' ? '' : Number(value);
     } else if (type === 'checkbox') {
@@ -460,14 +473,10 @@ const TablaCrud = ({ endpoint, columns, title, formTitle, canAdd = true, expanda
                         >
                           <option value="">Seleccione...</option>
                           {(selectOptions[col.key] || []).map(opt => {
-                            let labelStr = '';
-                            if (typeof col.optionLabel === 'function') {
-                              labelStr = col.optionLabel(opt);
-                            } else {
-                              labelStr = opt[col.optionLabel || 'nombre'] || opt.id;
-                            }
+                            const val = opt.id !== undefined ? opt.id : opt.value;
+                            const labelStr = opt.label || opt.nombre || val;
                             return (
-                              <option key={opt.id} value={opt.id}>
+                              <option key={val} value={val}>
                                 {labelStr}
                               </option>
                             );
