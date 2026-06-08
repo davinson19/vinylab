@@ -1,0 +1,309 @@
+/* ==========================================================================
+   Store Mobile Responsive Rules
+   ========================================================================== */
+
+@media (min-width: 768px) {
+  .store-footer-content {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 992px) {
+  .store-navbar {
+    padding: 0 1.5rem;
+    height: 70px;
+  }
+
+  .store-title {
+    font-size: 1.5rem;
+  }
+
+  .store-welcome-banner-full {
+    height: 300px;
+  }
+
+  .welcome-title {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .desktop-nav-actions {
+    display: none;
+  }
+
+  .hamburger-btn {
+    display: flex;
+  }
+
+  .store-navbar {
+    padding: 0 1rem;
+    height: 65px;
+  }
+
+  .store-logo {
+    height: 35px;
+  }
+
+  .store-title {
+    font-size: 1.35rem;
+  }
+
+  .store-content {
+    padding: 2rem 1rem;
+  }
+
+  .store-welcome-banner-full {
+    height: 220px;
+    padding: 2rem 1rem;
+  }
+
+  .welcome-title {
+    font-size: 1.8rem;
+  }
+
+  .store-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .search-input-wrapper {
+    max-width: 100%;
+  }
+
+  .category-tags {
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 0.5rem;
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  }
+
+  .vinyl-grid {
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .vinyl-cover-container {
+    height: 220px;
+  }
+
+  /* Cart sidebar adaptive width */
+  .cart-drawer {
+    max-width: 100%;
+  }
+
+  /* Profile views and forms scaling */
+  .profile-card {
+    padding: 1.5rem;
+    border-radius: 20px;
+  }
+
+  .profile-actions-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  /* Order details row responsive layout */
+  .order-card-header {
+    grid-template-columns: 1fr 1fr;
+    padding: 1rem 1.25rem;
+    gap: 0.75rem;
+  }
+
+  .order-card-body {
+    padding: 1.25rem;
+  }
+
+  .order-item-row {
+    gap: 0.75rem;
+  }
+
+  .order-item-cover {
+    width: 48px;
+    height: 48px;
+  }
+
+  .order-item-details {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .order-item-subtotal {
+    text-align: left;
+    margin-top: 0.25rem;
+  }
+
+  .order-card-footer {
+    padding: 1rem 1.25rem;
+  }
+
+  /* Payment Gateway adaptive styling */
+  .payment-modal-overlay {
+    padding: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .payment-modal-card {
+    margin: 1rem auto;
+    border-radius: 20px;
+  }
+
+  .payment-modal-body {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .btn-close-payment {
+    top: 1rem;
+    right: 1rem;
+    width: 32px;
+    height: 32px;
+  }
+
+  .payment-order-details {
+    max-height: 140px;
+    margin-bottom: 0.75rem;
+  }
+
+  .payment-summary-box {
+    padding: 1rem;
+  }
+
+  .payment-form-col h2 {
+    font-size: 1.5rem;
+  }
+
+  .payment-actions-row {
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+
+  .payment-layout-cols {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  /* Vinyl details modal adaptive */
+  .detail-layout-cols {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 2.25rem 1.5rem;
+  }
+  
+  .detail-modal-card {
+    border-radius: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .detail-cover-wrapper {
+    max-width: 220px;
+  }
+  
+  .detail-title {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .order-item-details {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .toast-notification {
+    bottom: 1.5rem;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, 100px) scale(0.9);
+    width: calc(100% - 3rem);
+    max-width: 320px;
+    justify-content: center;
+  }
+
+  .toast-notification.show {
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .store-title {
+    display: none;
+  }
+
+  .vinyl-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vinyl-cover-container {
+    height: 280px;
+  }
+
+  .empty-store-container {
+    padding: 3rem 1rem;
+  }
+
+  .spinning-vinyl-wrapper {
+    width: 120px;
+    height: 120px;
+  }
+
+  .payment-modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .payment-modal-card {
+    margin: 0.5rem auto;
+    border-radius: 16px;
+  }
+
+  .payment-modal-body {
+    padding: 1.25rem 1rem;
+  }
+
+  .payment-form-col h2 {
+    font-size: 1.35rem;
+  }
+
+  .form-row-two-cols {
+    gap: 0.75rem;
+  }
+
+  .payment-actions-row {
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+
+  .btn-payment-submit {
+    order: 1;
+    width: 100%;
+    padding: 0.85rem;
+  }
+
+  .btn-payment-cancel {
+    order: 2;
+    width: 100%;
+    padding: 0.85rem;
+  }
+
+  .payment-success-screen {
+    padding: 3rem 1.5rem;
+    gap: 1rem;
+  }
+
+  .success-icon-wrapper {
+    width: 80px;
+    height: 80px;
+  }
+
+  .success-checkmark {
+    width: 48px;
+    height: 48px;
+  }
+}

@@ -1,0 +1,235 @@
+.admin-layout {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  background: var(--background);
+  color: var(--text);
+  overflow: hidden;
+}
+
+.admin-sidebar {
+  width: 260px;
+  background: var(--surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-right: 1px solid var(--surface-border);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 0;
+}
+
+.admin-sidebar-header {
+  padding: 0 1.5rem 1.5rem 1.5rem;
+  border-bottom: 1px solid var(--surface-border);
+  margin-bottom: 1rem;
+}
+
+.admin-sidebar-header h2 {
+  font-size: 1.75rem;
+  font-weight: normal;
+  font-family: 'ITC Magnifico';
+  color: var(--primary);
+}
+
+.light-mode .admin-sidebar-header h2 {
+  color: var(--primary);
+}
+
+.admin-sidebar-menu {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0 1rem;
+}
+
+.admin-menu-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 0.875rem 1rem;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-menu-btn:hover {
+  background: var(--hover-bg);
+  color: var(--text);
+}
+
+.admin-menu-btn.active {
+  background: rgba(204, 164, 4, 0.15);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.admin-sidebar-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--surface-border);
+}
+
+.admin-logout-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.admin-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.light-mode .admin-content {
+  background: transparent;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.admin-header h1 {
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.btn-secondary {
+  padding: 0.625rem 1.25rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.light-mode .btn-secondary:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.admin-column-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.admin-sidebar-theme-btn {
+  margin-bottom: 0.5rem;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-add-new {
+  width: auto;
+  margin-top: 0;
+}
+
+.spaced-error {
+  margin-bottom: 1rem;
+}
+
+.loading-message {
+  padding: 2rem;
+  text-align: center;
+}
+
+/* Mobile header inside admin */
+.admin-mobile-header {
+  display: none;
+  align-items: center;
+  height: 56px;
+  padding: 0 1rem;
+  background: var(--surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--surface-border);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-mobile-title {
+  font-size: 1.35rem;
+  font-weight: normal;
+  font-family: 'ITC Magnifico', 'Outfit', sans-serif;
+  color: var(--primary);
+  letter-spacing: 0.03em;
+}
+
+.admin-hamburger-btn {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.admin-hamburger-btn:hover,
+.admin-hamburger-btn:active {
+  color: var(--primary);
+}
+
+.admin-sidebar-close-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0.25rem 0.5rem;
+}
+
+.admin-sidebar-close-btn:hover {
+  color: var(--error);
+}
+
+/* Mobile Sidebar overlay */
+.admin-sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 99;
+}

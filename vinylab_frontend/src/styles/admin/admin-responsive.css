@@ -1,0 +1,104 @@
+/* Media Queries for Admin */
+@media (max-width: 768px) {
+  .admin-layout {
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: auto;
+    min-height: 100vh;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .admin-mobile-header {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Slide out sidebar from left */
+  .admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    bottom: 0;
+    width: 260px;
+    z-index: 100;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .admin-sidebar.open {
+    left: 0;
+  }
+
+  .admin-sidebar-close-btn {
+    display: block;
+  }
+
+  .admin-sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .admin-content {
+    padding: 1.5rem 1rem;
+    overflow-y: visible;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Enable Horizontal Scroll on CRUD Tables so they don't break layout */
+  .crud-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .crud-table {
+    min-width: 700px; /* Force minimum width to allow clean scrolling */
+  }
+
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .admin-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .btn-add-new {
+    width: 100%;
+  }
+
+  /* Expandable detailed tables scrolling */
+  .pedido-details-table {
+    min-width: 600px;
+  }
+
+  /* Columns container layout stacked */
+  .admin-column-layout {
+    gap: 2rem;
+  }
+
+  /* Responsive modal */
+  .modal-content {
+    width: 95%;
+    max-height: 85vh;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .modal-footer {
+    padding: 1rem;
+  }
+}

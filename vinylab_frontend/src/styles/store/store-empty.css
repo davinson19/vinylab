@@ -1,0 +1,159 @@
+/* Empty Store State (Stunning UI) */
+.empty-store-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 5rem 2rem;
+  background: var(--surface);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--surface-border);
+  border-radius: 24px;
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.2);
+  margin-top: 1rem;
+}
+
+.spinning-vinyl-wrapper {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin-bottom: 2rem;
+}
+
+.spinning-vinyl-outer {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #1e293b 30%, #020617 70%);
+  border: 4px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  animation: vinylSpin 6s linear infinite;
+}
+
+.spinning-vinyl-grooves {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  border: 2px dashed rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+}
+
+.spinning-vinyl-grooves-2 {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  right: 25px;
+  bottom: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 50%;
+}
+
+.spinning-vinyl-center {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.spinning-vinyl-hole {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--background);
+}
+
+.spinning-vinyl-needle {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 60px;
+  height: 60px;
+  transform-origin: top right;
+  transform: rotate(15deg);
+  transition: transform 0.3s ease;
+}
+
+.empty-store-container:hover .spinning-vinyl-outer {
+  animation-play-state: running;
+}
+
+@keyframes vinylSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.empty-store-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+}
+
+.empty-store-text {
+  color: var(--text-muted);
+  max-width: 500px;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-accent:hover {
+  background: var(--primary);
+  color: var(--primary-btn-text);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(204, 164, 4, 0.2);
+}
+
+.spinning-vinyl-container {
+  display: flex;
+  justify-content: center;
+  padding: 5rem;
+}
+
+.spinning-vinyl-outer.running {
+  animation-play-state: running;
+}
+
+.spinning-vinyl-outer.paused {
+  animation-play-state: paused;
+}
+
+.spinning-vinyl-needle.refreshing {
+  transform: rotate(35deg);
+}
+
+.empty-store-container.compact {
+  padding: 3rem 2rem;
+}
+
+.spinning-vinyl-wrapper.small {
+  width: 80px;
+  height: 80px;
+}

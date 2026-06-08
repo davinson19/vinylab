@@ -1,0 +1,245 @@
+/* ==========================================================================
+   "Mis Pedidos" (Order History) View Styles
+   ========================================================================== */
+.orders-view-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1rem 0;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.orders-view-header {
+  margin-bottom: 0.5rem;
+}
+
+.orders-view-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.orders-view-subtitle {
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.order-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.order-card-header {
+  padding: 1.25rem 1.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--surface-border);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  align-items: center;
+}
+
+.light-mode .order-card-header {
+  background: rgba(0, 0, 0, 0.01);
+}
+
+.order-header-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.order-meta-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.order-meta-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.order-meta-value.order-id {
+  color: var(--primary);
+}
+
+.order-status-badge {
+  justify-self: start;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.35rem 0.75rem;
+  border-radius: 100px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.order-status-badge.pagado,
+.order-status-badge.pendiente_envio,
+.order-status-badge.pendiente_de_envío {
+  color: #d97706;
+  background: rgba(217, 119, 6, 0.12);
+  border: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+.order-status-badge.enviado {
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.order-status-badge.entregado {
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.12);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+}
+
+.order-card-body {
+  padding: 1.75rem;
+}
+
+.order-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.order-item-row {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.order-item-cover {
+  width: 55px;
+  height: 55px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: radial-gradient(circle, #1a1a1a 0%, #050505 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--surface-border);
+  flex-shrink: 0;
+}
+
+.order-item-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.order-item-details {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.order-item-title-artist {
+  display: flex;
+  flex-direction: column;
+}
+
+.order-item-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.order-item-artist {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.order-item-price-unit, .order-item-quantity, .order-item-subtotal {
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.order-item-price-unit {
+  color: var(--text-muted);
+}
+
+.order-item-subtotal {
+  font-weight: 600;
+  text-align: right;
+  color: var(--primary);
+}
+
+.order-card-footer {
+  padding: 1.25rem 1.75rem;
+  background: rgba(255,255,255,0.01);
+  border-top: 1px solid var(--surface-border);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.order-total-label {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.order-total-price {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.empty-orders-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 24px;
+  color: var(--text-muted);
+  gap: 1rem;
+}
+
+.empty-orders-icon {
+  font-size: 3.5rem;
+  color: var(--primary);
+  opacity: 0.8;
+}
+
+.empty-orders-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.empty-orders-text {
+  max-width: 420px;
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+}
+
+.order-header-meta-wide {
+  min-width: 120px;
+}

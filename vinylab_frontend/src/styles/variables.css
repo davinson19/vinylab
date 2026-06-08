@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+@font-face {
+  font-family: 'ITC Magnifico';
+  src: url('../assets/fonts/font_vinylab.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+:root {
+  --primary: #cca404;
+  --primary-hover: #a38303;
+  --primary-btn-text: #070707; /* High contrast dark text (8.52:1) for primary background in dark mode */
+  --background: #070707;
+  --surface: rgba(18, 18, 18, 0.8);
+  --surface-border: rgba(255, 255, 255, 0.08);
+  --hover-bg: rgba(255, 255, 255, 0.05);
+  --primary-shadow: rgba(204, 164, 4, 0.3);
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --error: #ef4444;
+  --success: #10b981;
+}
+
+.light-mode {
+  --primary: #856404; /* High contrast gold/bronze (5.25:1) against #f8fafc in light mode */
+  --primary-hover: #6c5103;
+  --primary-btn-text: #ffffff; /* High contrast white text (5.49:1) for primary background in light mode */
+  --background: #f8fafc;
+  --surface: rgba(255, 255, 255, 0.95);
+  --surface-border: rgba(0, 0, 0, 0.08);
+  --hover-bg: rgba(0, 0, 0, 0.08);
+  --primary-shadow: rgba(133, 100, 4, 0.25);
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --error: #b91c1c; /* High contrast red (6.18:1) against #f8fafc in light mode */
+  --success: #15803d; /* High contrast green (4.79:1) against #f8fafc in light mode */
+}

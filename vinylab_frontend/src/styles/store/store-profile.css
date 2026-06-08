@@ -1,0 +1,106 @@
+/* Profile Configuration View */
+.profile-view-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 1rem 0;
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 550px;
+  background: var(--surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--surface-border);
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+}
+
+.profile-card-header {
+  text-align: center;
+  margin-bottom: 2.25rem;
+}
+
+.profile-card-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.profile-card-subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.profile-form-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.profile-actions-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-secondary-outline {
+  flex: 1;
+  padding: 0.875rem;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.btn-secondary-outline:hover {
+  background: var(--hover-bg);
+}
+
+.profile-logout-btn {
+  width: 100%;
+  padding: 0.875rem;
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--error);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.profile-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Form input additions for lock badges */
+.input-with-badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-badge {
+  position: absolute;
+  right: 1rem;
+  background: rgba(204, 164, 4, 0.15);
+  color: var(--primary);
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  pointer-events: none;
+}
