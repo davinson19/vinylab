@@ -1,32 +1,25 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchApi } from '../utils/api';
-import logo from '../assets/logo.png';
-import welcomeGif from '../assets/banner.gif';
 import Footer from './Footer';
 import { useLanguage } from '../utils/LanguageContext';
 
-const FALLBACK_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="10" fill="%231e1e2e"/><circle cx="50" cy="50" r="40" fill="%230f0f15" stroke="%23313244" stroke-width="2"/><circle cx="50" cy="50" r="30" fill="none" stroke="%2345475a" stroke-dasharray="8,6" stroke-width="1"/><circle cx="50" cy="50" r="20" fill="none" stroke="%2345475a" stroke-dasharray="6,4" stroke-width="1"/><circle cx="50" cy="50" r="12" fill="%23cba6f7"/><circle cx="50" cy="50" r="4" fill="%230f0f15"/></svg>`;
-
-
-const formatStatus = (status, t) => {
-  const normalized = status ? status.toLowerCase() : '';
-  if (normalized === 'pendiente_envio' || normalized === 'pendiente de envío' || normalized === 'pagado') {
-    return t('pendienteEnvio');
-  }
-  if (normalized === 'enviado') {
-    return t('enviado');
-  }
-  if (normalized === 'entregado') {
-    return t('entregado');
-  }
-  return status;
-};
+// Import subcomponents
+import NavbarTienda from './tienda/NavbarTienda';
+import MenuMovil from './tienda/MenuMovil';
+import BannerBienvenida from './tienda/BannerBienvenida';
+import BarraFiltros from './tienda/BarraFiltros';
+import GridVinilos from './tienda/GridVinilos';
+import HistorialPedidos from './tienda/HistorialPedidos';
+import FormularioPerfil from './tienda/FormularioPerfil';
+import Carrito from './tienda/Carrito';
+import ModalPago from './tienda/ModalPago';
+import ModalDetallesVinilo from './tienda/ModalDetallesVinilo';
 
 const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
-  const { idioma, t } = useLanguage();
+  const { t } = useLanguage();
 
   // States
   const [activeView, setActiveView] = useState('store'); // 'store' | 'profile' | 'orders'
@@ -78,7 +71,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const toastTimeoutRef = useRef(null);
 
-  const showToast = (message, type = 'success') => {
+  const showToast = useCallback((message, type = 'success') => {
     if (toastTimeoutRef.current) {
       clearTimeout(toastTimeoutRef.current);
     }
@@ -86,7 +79,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     toastTimeoutRef.current = setTimeout(() => {
       setToast({ show: false, message: '', type: 'success' });
     }, 3000);
-  };
+  }, []);
 
   // Orders States
   const [orders, setOrders] = useState([]);
@@ -112,7 +105,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
   }, [cart, userId]);
 
   // Load vinyls and categories from database
-  const cargarVinilos = async () => {
+  const cargarVinilos = useCallback(async () => {
     setLoadingVinyls(true);
     try {
       const data = await fetchApi('/vinilo');
@@ -122,9 +115,9 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     } finally {
       setLoadingVinyls(false);
     }
-  };
+  }, []);
 
-  const cargarCategorias = async () => {
+  const cargarCategorias = useCallback(async () => {
     try {
       const data = await fetchApi('/categoria');
       const names = ['Todos', ...data.map(c => c.nombre)];
@@ -132,9 +125,9 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     } catch (err) {
       console.error("Error al cargar categorías:", err);
     }
-  };
+  }, []);
 
-  const cargarPedidos = async () => {
+  const cargarPedidos = useCallback(async () => {
     setLoadingOrders(true);
     try {
       const data = await fetchApi('/pedido');
@@ -145,13 +138,24 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     } finally {
       setLoadingOrders(false);
     }
-  };
+  }, []);
 
   // Fetch data on mount
   useEffect(() => {
-    cargarVinilos();
-    cargarCategorias();
-  }, []);
+    let active = true;
+    const fetchOnMount = async () => {
+      // Defer to microtask queue to avoid synchronous setState inside useEffect warning
+      await Promise.resolve();
+      if (active) {
+        cargarVinilos();
+        cargarCategorias();
+      }
+    };
+    fetchOnMount();
+    return () => {
+      active = false;
+    };
+  }, [cargarVinilos, cargarCategorias]);
 
   // Cleanup toast timer on unmount
   useEffect(() => {
@@ -164,36 +168,51 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
 
   // Fetch current user details on mount
   useEffect(() => {
+    let active = true;
     const loadUserProfile = async () => {
+      await Promise.resolve();
       if (!userId) {
-        setLoadingUser(false);
+        if (active) setLoadingUser(false);
         return;
       }
       try {
         const data = await fetchApi(`/usuario/${userId}`);
-        setUser(data);
-        setProfileData({
-          nombre: data.nombre || '',
-          email: data.email || '',
-          direccion: data.direccion || '',
-          contrasena: '' // leave password blank
-        });
+        if (active) {
+          setUser(data);
+          setProfileData({
+            nombre: data.nombre || '',
+            email: data.email || '',
+            direccion: data.direccion || '',
+            contrasena: '' // leave password blank
+          });
+        }
       } catch (err) {
         console.error("Error al cargar perfil:", err);
       } finally {
-        setLoadingUser(false);
+        if (active) setLoadingUser(false);
       }
     };
 
     loadUserProfile();
+    return () => {
+      active = false;
+    };
   }, [userId]);
 
   // Load orders when active view is 'orders'
   useEffect(() => {
-    if (activeView === 'orders') {
-      cargarPedidos();
-    }
-  }, [activeView]);
+    let active = true;
+    const fetchOrdersView = async () => {
+      await Promise.resolve();
+      if (active && activeView === 'orders') {
+        cargarPedidos();
+      }
+    };
+    fetchOrdersView();
+    return () => {
+      active = false;
+    };
+  }, [activeView, cargarPedidos]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -229,14 +248,12 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     setProfileError('');
 
     try {
-      // Build update payload
       const payload = {
         nombre: profileData.nombre,
         email: profileData.email,
         direccion: profileData.direccion
       };
 
-      // Only add password if the user typed something
       if (profileData.contrasena.trim() !== '') {
         payload.contrasena = profileData.contrasena;
       }
@@ -460,987 +477,110 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
 
   return (
     <div className="store-layout fade-in">
-      {/* Header/Navbar */}
-      <header className="store-navbar">
-        <button className="store-brand" onClick={() => { setActiveView('store'); setIsMobileMenuOpen(false); }} title={t('volverTienda')}>
-          <img src={logo} alt="VinyLab Logo" className="store-logo" />
-          <span className="store-title">VinyLab</span>
-        </button>
+      <NavbarTienda
+        activeView={activeView}
+        setActiveView={setActiveView}
+        toggleTheme={toggleTheme}
+        isDarkMode={isDarkMode}
+        user={user}
+        loadingUser={loadingUser}
+        cartItemCount={cartItemCount}
+        cierreSesion={cierreSesion}
+        setIsCartOpen={setIsCartOpen}
+        isDropdownOpen={isDropdownOpen}
+        setIsDropdownOpen={setIsDropdownOpen}
+        isMobileMenuOpen={isMobileMenuOpen}
+        setIsMobileMenuOpen={setIsMobileMenuOpen}
+        dropdownRef={dropdownRef}
+      />
 
-        <div className="store-nav-actions">
-          {/* Cart Button */}
-          <button
-            type="button"
-            className="nav-btn nav-btn-relative"
-            onClick={() => { setIsCartOpen(true); setIsMobileMenuOpen(false); }}
-            title={t('verCarrito')}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="9" cy="21" r="1"></circle>
-              <circle cx="20" cy="21" r="1"></circle>
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-            </svg>
-            {cartItemCount > 0 && (
-              <span className="cart-badge-indicator">{cartItemCount}</span>
-            )}
-          </button>
+      <MenuMovil
+        isOpen={isMobileMenuOpen}
+        setIsOpen={setIsMobileMenuOpen}
+        activeView={activeView}
+        setActiveView={setActiveView}
+        toggleTheme={toggleTheme}
+        isDarkMode={isDarkMode}
+        user={user}
+        loadingUser={loadingUser}
+        cierreSesion={cierreSesion}
+      />
 
-          {/* Desktop Only Actions */}
-          <div className="desktop-nav-actions">
-            {/* Theme Toggler */}
-            <button
-              type="button"
-              className="nav-btn"
-              onClick={toggleTheme}
-              title={isDarkMode ? t('modoDia') : t('modoNoche')}
-            >
-              {isDarkMode ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="5"></circle>
-                  <line x1="12" y1="1" x2="12" y2="3"></line>
-                  <line x1="12" y1="21" x2="12" y2="23"></line>
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                  <line x1="1" y1="12" x2="3" y2="12"></line>
-                  <line x1="21" y1="12" x2="23" y2="12"></line>
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                </svg>
-              ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                </svg>
-              )}
-            </button>
-
-            {/* User Icon & Dropdown */}
-            <div className="user-dropdown-container" ref={dropdownRef}>
-              <button 
-                className={`user-avatar-btn ${isDropdownOpen ? 'active' : ''}`}
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                title={t('miCuenta')}
-              >
-                <svg className="user-avatar-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-              </button>
-
-              {isDropdownOpen && (
-                <div className="user-dropdown-menu">
-                  <div className="dropdown-user-info">
-                    <div className="dropdown-user-name">
-                      {loadingUser ? t('cargando') : user ? user.nombre : t('cliente')}
-                    </div>
-                  </div>
-                  
-                  <button 
-                    className={`dropdown-item ${activeView === 'orders' ? 'active' : ''}`}
-                    onClick={() => {
-                      setActiveView('orders');
-                      setIsDropdownOpen(false);
-                    }}
-                  >
-                    {t('historialPedidos')}
-                  </button>
-
-                  <button 
-                    className={`dropdown-item ${activeView === 'profile' ? 'active' : ''}`}
-                    onClick={() => {
-                      setActiveView('profile');
-                      setIsDropdownOpen(false);
-                    }}
-                  >
-                    {t('configuracion')}
-                  </button>
-
-
-                  <div className="dropdown-divider"></div>
-
-                  <button className="dropdown-item logout" onClick={cierreSesion}>
-                    {t('cerrarSesion')}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Hamburger Menu Button (Mobile) */}
-          <button
-            type="button"
-            className={`nav-btn hamburger-btn ${isMobileMenuOpen ? 'active' : ''}`}
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            title={t('menu')}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              {isMobileMenuOpen ? (
-                <>
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </>
-              ) : (
-                <>
-                  <line x1="3" y1="12" x2="21" y2="12"></line>
-                  <line x1="3" y1="6" x2="21" y2="6"></line>
-                  <line x1="3" y1="18" x2="21" y2="18"></line>
-                </>
-              )}
-            </svg>
-          </button>
-        </div>
-      </header>
-
-      {/* Mobile Menu Drawer Overlay */}
-      {isMobileMenuOpen && (
-        <div className="mobile-menu-overlay" onClick={() => setIsMobileMenuOpen(false)}>
-          <nav className="mobile-menu-drawer" onClick={(e) => e.stopPropagation()} aria-label="Navegación móvil">
-            <div className="mobile-menu-header">
-              <h2 className="mobile-menu-title">{t('menu')}</h2>
-              <button 
-                type="button" 
-                className="btn-close-menu" 
-                onClick={() => setIsMobileMenuOpen(false)}
-                title={t('payCancelar')}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-            </div>
-            
-            <div className="mobile-menu-body">
-              <div className="mobile-user-name">
-                {loadingUser ? t('cargando') : user ? user.nombre : t('cliente')}
-              </div>
-
-              <div className="mobile-menu-items">
-                <button 
-                  className={`mobile-menu-item ${activeView === 'store' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveView('store');
-                    setIsMobileMenuOpen(false);
-                  }}
-                >
-                  {t('catalogo')}
-                </button>
-
-                <button 
-                  className={`mobile-menu-item ${activeView === 'orders' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveView('orders');
-                    setIsMobileMenuOpen(false);
-                  }}
-                >
-                  {t('historialPedidos')}
-                </button>
-
-                <button 
-                  className={`mobile-menu-item ${activeView === 'profile' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveView('profile');
-                    setIsMobileMenuOpen(false);
-                  }}
-                >
-                  {t('configuracion')}
-                </button>
-
-                <div className="mobile-menu-divider"></div>
-
-                {/* Theme Toggle row inside mobile menu */}
-                <div className="mobile-theme-row">
-                  <span>{idioma === 'es' ? `Modo ${isDarkMode ? 'Día' : 'Noche'}` : `Mode ${isDarkMode ? 'Day' : 'Night'}`}</span>
-                  <button
-                    type="button"
-                    className="nav-btn"
-                    onClick={toggleTheme}
-                    title={isDarkMode ? t('modoDia') : t('modoNoche')}
-                  >
-                    {isDarkMode ? (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="5"></circle>
-                        <line x1="12" y1="1" x2="12" y2="3"></line>
-                        <line x1="12" y1="21" x2="12" y2="23"></line>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                        <line x1="1" y1="12" x2="3" y2="12"></line>
-                        <line x1="21" y1="12" x2="23" y2="12"></line>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                      </svg>
-                    ) : (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                      </svg>
-                    )}
-                  </button>
-                </div>
-
-                <div className="mobile-menu-divider"></div>
-
-                <button className="mobile-menu-item logout" onClick={() => { cierreSesion(); setIsMobileMenuOpen(false); }}>
-                  {t('cerrarSesion')}
-                </button>
-              </div>
-            </div>
-          </nav>
-        </div>
-      )}
-
-      {activeView === 'store' && (
-        <section 
-          className="store-welcome-banner-full" 
-          style={{ '--welcome-banner-url': `url(${welcomeGif})` }}
-        >
-          <h1 className="welcome-title">
-            {idioma === 'es' 
-              ? `¡Hola${user ? `, ${user.nombre}` : ''}! Bienvenido a VinyLab`
-              : `Hello${user ? `, ${user.nombre}` : ''}! Welcome to VinyLab`
-            }
-          </h1>
-        </section>
-      )}
+      {activeView === 'store' && <BannerBienvenida user={user} />}
 
       {/* Main Content Area */}
       <main className="store-content">
         {activeView === 'store' ? (
           <div className="fade-in">
+            <BarraFiltros
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              dbCategories={dbCategories}
+              activeCategory={activeCategory}
+              setActiveCategory={setActiveCategory}
+            />
 
-            {/* Filter and search bar */}
-            <div className="store-filter-bar">
-              <div className="search-input-wrapper">
-                <svg className="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <input
-                  type="text"
-                  placeholder={t('buscarPlaceholder')}
-                  className="search-input"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-
-              <div className="category-tags">
-                {dbCategories.map(cat => (
-                  <button
-                    key={cat}
-                    className={`category-tag ${activeCategory === cat ? 'active' : ''}`}
-                    onClick={() => setActiveCategory(cat)}
-                  >
-                    {cat === 'Todos' ? t('todos') : cat}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Catalog Grid */}
-            {loadingVinyls ? (
-              <div className="spinning-vinyl-container">
-                <div className="spinning-vinyl-wrapper">
-                  <div className="spinning-vinyl-outer running">
-                    <div className="spinning-vinyl-grooves"></div>
-                    <div className="spinning-vinyl-grooves-2"></div>
-                    <div className="spinning-vinyl-center">
-                      <div className="spinning-vinyl-hole"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : vinyls.length === 0 ? (
-              <div className="empty-store-container fade-in">
-                <div className="spinning-vinyl-wrapper">
-                  <div className={`spinning-vinyl-outer ${isRefreshing ? 'running' : 'paused'}`}>
-                    <div className="spinning-vinyl-grooves"></div>
-                    <div className="spinning-vinyl-grooves-2"></div>
-                    <div className="spinning-vinyl-center">
-                      <div className="spinning-vinyl-hole"></div>
-                    </div>
-                  </div>
-                  <svg className={`spinning-vinyl-needle ${isRefreshing ? 'refreshing' : ''}`} viewBox="0 0 100 100">
-                    <path d="M70 20 L40 65 L45 70" stroke="var(--text-muted)" strokeWidth="3" fill="none" strokeLinecap="round" />
-                    <rect x="36" y="65" width="10" height="15" rx="2" fill="var(--primary)" transform="rotate(-30 41 72)" />
-                  </svg>
-                </div>
-
-                <h2 className="empty-store-title">{t('preparacion')}</h2>
-                <p className="empty-store-text">{t('noVinilos')}</p>
-                
-                <button 
-                  type="button" 
-                  className="btn-accent" 
-                  onClick={actualizarTienda}
-                  disabled={isRefreshing}
-                >
-                  {isRefreshing ? t('actualizando') : t('comprobarNovedades')}
-                </button>
-              </div>
-            ) : filteredVinyls.length === 0 ? (
-              <div className="empty-store-container fade-in compact">
-                <h2 className="empty-store-title">{t('sinResultados')}</h2>
-                <p className="empty-store-text">{t('sinResultadosTexto')}</p>
-                <button 
-                  type="button" 
-                  className="btn-accent" 
-                  onClick={() => { setSearchQuery(''); setActiveCategory('Todos'); }}
-                >
-                  {t('limpiarFiltros')}
-                </button>
-              </div>
-            ) : (
-              <section className="vinyl-grid fade-in" aria-label={t('catalogo')}>
-                {filteredVinyls.map(vinyl => (
-                  <article key={vinyl.id} className="vinyl-card">
-                    <div 
-                      className="vinyl-cover-container" 
-                      onClick={() => setSelectedVinyl(vinyl)} 
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <span className="vinyl-category-badge">{vinyl.categoria ? vinyl.categoria.nombre : (idioma === 'es' ? 'General' : 'General')}</span>
-                      {vinyl.portada ? (
-                        <img 
-                          src={vinyl.portada} 
-                          alt={vinyl.titulo} 
-                          className="vinyl-cover-img" 
-                          onError={(e) => { e.target.src = FALLBACK_SVG; }}
-                        />
-                      ) : (
-                        <div className="fallback-cover-large">💿</div>
-                      )}
-                    </div>
-                    
-                    <div 
-                      className="vinyl-info" 
-                      onClick={() => setSelectedVinyl(vinyl)} 
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <h3 className="vinyl-card-title" title={vinyl.titulo}>{vinyl.titulo}</h3>
-                      <p className="vinyl-card-artist">{vinyl.artista ? vinyl.artista.nombre : (idioma === 'es' ? 'Artista Desconocido' : 'Unknown Artist')}</p>
-                      
-                      <div className="vinyl-card-meta">
-                        <span className="vinyl-card-year">{vinyl.anioLanzamiento}</span>
-                        {vinyl.stock <= 0 ? (
-                          <span className="vinyl-stock-badge out-of-stock">{t('agotado')}</span>
-                        ) : vinyl.stock <= 3 ? (
-                          <span className="vinyl-stock-badge low-stock">{t('ultimasUnidades')}</span>
-                        ) : null}
-                      </div>
-                    </div>
-                    
-                    <div className="vinyl-card-footer">
-                      <span className="vinyl-card-price">{parseFloat(vinyl.precio).toFixed(2)} €</span>
-                      <button 
-                        type="button" 
-                        className="btn-add-cart" 
-                        onClick={() => agregarAlCarrito(vinyl)}
-                        disabled={vinyl.stock <= 0}
-                        title={vinyl.stock <= 0 ? t('agotado') : t('anadirCarrito')}
-                      >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="9" cy="21" r="1"></circle>
-                          <circle cx="20" cy="21" r="1"></circle>
-                          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                        </svg>
-                      </button>
-                    </div>
-                  </article>
-                ))}
-              </section>
-            )}
+            <GridVinilos
+              vinyls={vinyls}
+              filteredVinyls={filteredVinyls}
+              loadingVinyls={loadingVinyls}
+              isRefreshing={isRefreshing}
+              onRefresh={actualizarTienda}
+              onSelectVinyl={setSelectedVinyl}
+              onAddToCart={agregarAlCarrito}
+              setSearchQuery={setSearchQuery}
+              setActiveCategory={setActiveCategory}
+            />
           </div>
         ) : activeView === 'orders' ? (
-          /* My Orders View */
-          <section className="orders-view-container fade-in" aria-label={t('pedidosTitulo')}>
-            <header className="orders-view-header">
-              <h2 className="orders-view-title">{t('pedidosTitulo')}</h2>
-              <p className="orders-view-subtitle">{t('pedidosSub')}</p>
-            </header>
-            
-            {loadingOrders ? (
-              <div className="flex-center-padded">
-                <div className="spinning-vinyl-wrapper small">
-                  <div className="spinning-vinyl-outer running">
-                    <div className="spinning-vinyl-grooves"></div>
-                    <div className="spinning-vinyl-grooves-2"></div>
-                    <div className="spinning-vinyl-center">
-                      <div className="spinning-vinyl-hole"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : orders.length === 0 ? (
-              <div className="empty-orders-container fade-in">
-                <div className="empty-orders-icon">📋</div>
-                <h3 className="empty-orders-title">{t('noPedidos')}</h3>
-                <p className="empty-orders-text">{t('noPedidosTexto')}</p>
-                <button 
-                  type="button" 
-                  className="btn-secondary-outline btn-width-limit" 
-                  onClick={() => setActiveView('store')}
-                >
-                  {t('volverTienda')}
-                </button>
-              </div>
-            ) : (
-              <div className="orders-list fade-in">
-                {orders.map(order => {
-                  const orderDate = new Date(order.fechaCreacion).toLocaleDateString(idioma === 'es' ? 'es-ES' : 'en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  });
-                  
-                  return (
-                    <article key={order.id} className="order-card">
-                      <div className="order-card-header">
-                        <div className="order-header-meta">
-                          <span className="order-meta-label">{t('pedidoLabel')}</span>
-                          <span className="order-meta-value order-id">#{order.id}</span>
-                        </div>
-                        <div className="order-header-meta">
-                          <span className="order-meta-label">{t('fechaLabel')}</span>
-                          <span className="order-meta-value">{orderDate}</span>
-                        </div>
-                        <div className="order-header-meta">
-                          <span className="order-meta-label">{t('totalLabel')}</span>
-                          <span className="order-meta-value">{parseFloat(order.importeTotal).toFixed(2)} €</span>
-                        </div>
-                        <div className="order-header-meta order-header-meta-wide">
-                          <span className="order-meta-label">{t('estadoLabel')}</span>
-                          <span className={`order-status-badge ${order.estado.toLowerCase()}`}>
-                            {formatStatus(order.estado, t)}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <div className="order-card-body">
-                        <div className="order-items-list">
-                          {order.vinilos && order.vinilos.map(detail => {
-                            const unitPrice = detail.vinilo ? parseFloat(detail.vinilo.precio) : 0;
-                            const subtotal = unitPrice * detail.cantidad;
-                            
-                            return (
-                              <div key={detail.id} className="order-item-row">
-                                <div className="order-item-cover">
-                                  {detail.vinilo && detail.vinilo.portada ? (
-                                    <img 
-                                      src={detail.vinilo.portada} 
-                                      alt={detail.vinilo.titulo} 
-                                      onError={(e) => { e.target.src = FALLBACK_SVG; }}
-                                    />
-                                  ) : (
-                                    <div className="fallback-cover-small">💿</div>
-                                  )}
-                                </div>
-                                <div className="order-item-details">
-                                  <div className="order-item-title-artist">
-                                    <h4 className="order-item-title">{detail.vinilo ? detail.vinilo.titulo : (idioma === 'es' ? 'Vinilo Eliminado' : 'Deleted Vinyl')}</h4>
-                                    <p className="order-item-artist">{detail.vinilo && detail.vinilo.artista ? detail.vinilo.artista.nombre : (idioma === 'es' ? 'Artista Desconocido' : 'Unknown Artist')}</p>
-                                  </div>
-                                  <div className="order-item-price-unit">
-                                    {unitPrice.toFixed(2)} € / {idioma === 'es' ? 'ud.' : 'unit'}
-                                  </div>
-                                  <div className="order-item-quantity">
-                                    {t('cantidadLabel')}: {detail.cantidad}
-                                  </div>
-                                  <div className="order-item-subtotal">
-                                    {subtotal.toFixed(2)} €
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                      
-                      <div className="order-card-footer">
-                        <span className="order-total-label">{t('totalPagadoLabel')}</span>
-                        <span className="order-total-price">{parseFloat(order.importeTotal).toFixed(2)} €</span>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
-          </section>
+          <HistorialPedidos
+            orders={orders}
+            loadingOrders={loadingOrders}
+            setActiveView={setActiveView}
+          />
         ) : (
-          /* Profile Configuration View */
-          <section className="profile-view-container fade-in" aria-label={t('profileTitulo')}>
-            <article className="profile-card">
-              <header className="profile-card-header">
-                <h2 className="profile-card-title">{t('profileTitulo')}</h2>
-                <p className="profile-card-subtitle">{t('profileSub')}</p>
-              </header>
-
-              {profileError && <div className="error-message fade-in spaced-error">{profileError}</div>}
-              {profileSuccess && <div className="success-message fade-in spaced-success">{t('profileExito')}</div>}
-
-              <form onSubmit={enviarPerfil}>
-                <div className="form-group">
-                  <label className="form-label" htmlFor="profile-nombre">{t('profileNombre')}</label>
-                  <input
-                    type="text"
-                    id="profile-nombre"
-                    name="nombre"
-                    className="form-input"
-                    placeholder={t('nombrePlaceholder')}
-                    value={profileData.nombre}
-                    onChange={cambioPerfil}
-                    required
-                  />
-                </div>
-
-                 <div className="form-group">
-                  <label className="form-label" htmlFor="profile-email">{t('profileEmail')}</label>
-                  <input
-                    type="email"
-                    id="profile-email"
-                    name="email"
-                    className="form-input"
-                    placeholder={t('emailPlaceholder')}
-                    value={profileData.email}
-                    onChange={cambioPerfil}
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label" htmlFor="profile-direccion">{t('profileDireccion')}</label>
-                  <input
-                    type="text"
-                    id="profile-direccion"
-                    name="direccion"
-                    className="form-input"
-                    placeholder={t('profileDireccionPlaceholder')}
-                    value={profileData.direccion}
-                    onChange={cambioPerfil}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label" htmlFor="profile-contrasena">{t('profileContrasena')}</label>
-                  <input
-                    type="password"
-                    id="profile-contrasena"
-                    name="contrasena"
-                    className="form-input"
-                    placeholder={t('profileContrasenaPlaceholder')}
-                    value={profileData.contrasena}
-                    onChange={cambioPerfil}
-                  />
-                </div>
-
-                <div className="profile-form-footer">
-                  <button 
-                    type="submit" 
-                    className="btn-primary btn-flex-no-margin" 
-                    disabled={savingProfile}
-                  >
-                    {savingProfile ? t('profileGuardando') : t('profileGuardar')}
-                  </button>
-                </div>
-              </form>
-            </article>
-          </section>
+          <FormularioPerfil
+            profileData={profileData}
+            savingProfile={savingProfile}
+            profileSuccess={profileSuccess}
+            profileError={profileError}
+            onChange={cambioPerfil}
+            onSubmit={enviarPerfil}
+          />
         )}
       </main>
 
-      {/* Shopping Cart Drawer */}
-      {isCartOpen && (
-        <div className="cart-drawer-overlay" onClick={() => setIsCartOpen(false)}>
-          <aside className="cart-drawer" onClick={(e) => e.stopPropagation()} aria-label={t('cartTitulo')}>
-            <header className="cart-drawer-header">
-              <div className="cart-drawer-header-left">
-                <h2 className="cart-drawer-title">
-                  {t('cartTitulo')}
-                </h2>
-                {cart.length > 0 && (
-                  <button 
-                    type="button" 
-                    className="btn-clear-cart" 
-                    onClick={vaciarCarrito}
-                    title={t('cartVaciar')}
-                  >
-                    {t('cartVaciar')}
-                  </button>
-                )}
-              </div>
-              <button 
-                type="button" 
-                className="btn-close-cart" 
-                onClick={() => setIsCartOpen(false)}
-                title={t('payCancelar')}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-            </header>
-            
-            <div className="cart-drawer-body">
-              {cart.length === 0 ? (
-                <div className="cart-empty-state">
-                  <div className="cart-empty-vinyl">💿</div>
-                  <h3>{t('cartVacio')}</h3>
-                  <p>{t('cartVacioTexto')}</p>
-                </div>
-              ) : (
-                cart.map(item => (
-                  <div key={item.id} className="cart-item">
-                    <div className="cart-item-cover">
-                      {item.portada ? (
-                        <img 
-                          src={item.portada} 
-                          alt={item.titulo} 
-                          onError={(e) => { e.target.src = FALLBACK_SVG; }}
-                        />
-                      ) : (
-                        <div className="fallback-cover-medium">💿</div>
-                      )}
-                    </div>
-                    
-                    <div className="cart-item-info">
-                      <h4 className="cart-item-title" title={item.titulo}>{item.titulo}</h4>
-                      <p className="cart-item-artist">{item.artista ? item.artista.nombre : (idioma === 'es' ? 'Artista' : 'Artist')}</p>
-                      <span className="cart-item-price">{parseFloat(item.precio).toFixed(2)} €</span>
-                    </div>
-                    
-                    <div className="cart-item-actions">
-                      <button 
-                        type="button" 
-                        className="btn-remove-item"
-                        onClick={() => eliminarDelCarrito(item.id)}
-                        title={t('cartEliminarItem')}
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="3 6 5 6 21 6"></polyline>
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        </svg>
-                      </button>
-                      
-                      <div className="cart-item-qty">
-                        <button 
-                          type="button" 
-                          className="qty-btn"
-                          onClick={() => actualizarCantidad(item.id, item.quantity - 1, item.stock)}
-                          disabled={item.quantity <= 1}
-                        >
-                          -
-                        </button>
-                        <span className="qty-num">{item.quantity}</span>
-                        <button 
-                          type="button" 
-                          className="qty-btn"
-                          onClick={() => actualizarCantidad(item.id, item.quantity + 1, item.stock)}
-                          disabled={item.quantity >= item.stock}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-            
-            {cart.length > 0 && (
-              <div className="cart-drawer-footer">
-                <div className="cart-totals-row">
-                  <span className="cart-totals-label">{t('cartTotalLabel')} ({cartItemCount} {cartItemCount === 1 ? t('cartArticulo') : t('cartArticulos')}):</span>
-                  <span className="cart-totals-value">{cartTotal.toFixed(2)} €</span>
-                </div>
-                <button 
-                  type="button" 
-                  className="btn-checkout"
-                  onClick={abrirPasarelaPago}
-                >
-                  {t('cartComprar')}
-                </button>
-              </div>
-            )}
-          </aside>
-        </div>
-      )}
+      <Carrito
+        isOpen={isCartOpen}
+        setIsOpen={setIsCartOpen}
+        cart={cart}
+        cartItemCount={cartItemCount}
+        cartTotal={cartTotal}
+        onUpdateQty={actualizarCantidad}
+        onRemove={eliminarDelCarrito}
+        onClear={vaciarCarrito}
+        onCheckout={abrirPasarelaPago}
+      />
 
-      {/* Payment Gateway Modal Overlay */}
-      {isPaymentOpen && (
-        <div className="payment-modal-overlay">
-          <div className="payment-modal-card fade-in">
-            {isPaymentSuccess ? (
-              <div className="payment-success-screen">
-                <div className="success-icon-wrapper animate-pop">
-                  <svg className="success-checkmark" viewBox="0 0 52 52">
-                    <circle className="success-checkmark-circle" cx="26" cy="26" r="25" fill="none" />
-                    <path className="success-checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
-                  </svg>
-                </div>
-                <h2>{t('payExitoso')}</h2>
-              </div>
-            ) : (
-              <div className="payment-modal-body">
-                <button 
-                  type="button" 
-                  className="btn-close-payment" 
-                  onClick={() => setIsPaymentOpen(false)}
-                  disabled={isProcessingPayment}
-                  title={t('payCancelar')}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </button>
+      <ModalPago
+        isOpen={isPaymentOpen}
+        setIsOpen={setIsPaymentOpen}
+        cart={cart}
+        cartTotal={cartTotal}
+        paymentData={paymentData}
+        paymentError={paymentError}
+        isProcessing={isProcessingPayment}
+        isSuccess={isPaymentSuccess}
+        onChange={cambioInputPago}
+        onSubmit={enviarPago}
+      />
 
-                <div className="payment-layout-cols">
-                  <div className="payment-card-preview-col">
-                    <h3>{t('payResumen')}</h3>
-
-                    {/* Breakdown with details of the order */}
-                    <div className="payment-order-details">
-                      {cart.map(item => (
-                        <div key={item.id} className="payment-detail-item">
-                          <div className="payment-detail-cover">
-                            {item.portada ? (
-                              <img 
-                                src={item.portada} 
-                                alt={item.titulo} 
-                                onError={(e) => { e.target.src = FALLBACK_SVG; }}
-                              />
-                            ) : (
-                              <div className="payment-detail-fallback-cover">💿</div>
-                            )}
-                          </div>
-                          <div className="payment-detail-info">
-                            <h4 className="payment-detail-title" title={item.titulo}>{item.titulo}</h4>
-                            <p className="payment-detail-artist-qty">
-                              {item.artista ? item.artista.nombre : (idioma === 'es' ? 'Artista' : 'Artist')} • {t('cantidadLabel')}: {item.quantity}
-                            </p>
-                          </div>
-                          <div className="payment-detail-subtotal">
-                            {(parseFloat(item.precio) * item.quantity).toFixed(2)} €
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="payment-summary-box">
-                      <div className="summary-row total">
-                        <span>{t('payTotalPagar')}</span>
-                        <span>{cartTotal.toFixed(2)} €</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="payment-form-col">
-                    <h2>{t('payIntroduceTarjeta')}</h2>
-
-                    {paymentError && (
-                      <div className="error-message payment-error-alert fade-in">
-                        ⚠️ {paymentError}
-                      </div>
-                    )}
-
-                    <form onSubmit={enviarPago}>
-                      <div className="form-group">
-                        <label className="form-label" htmlFor="card-nombre">{t('payNombreTitular')}</label>
-                        <input
-                          type="text"
-                          id="card-nombre"
-                          name="nombre"
-                          className="form-input"
-                          placeholder=""
-                          value={paymentData.nombre}
-                          onChange={cambioInputPago}
-                          disabled={isProcessingPayment}
-                          required
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label className="form-label" htmlFor="card-numero">{t('payNumeroTarjeta')}</label>
-                        <input
-                          type="text"
-                          id="card-numero"
-                          name="numero"
-                          className="form-input card-num-input"
-                          placeholder=""
-                          value={paymentData.numero}
-                          onChange={cambioInputPago}
-                          disabled={isProcessingPayment}
-                          required
-                        />
-                      </div>
-
-                      <div className="form-row-two-cols">
-                        <div className="form-group">
-                          <label className="form-label" htmlFor="card-expiracion">{t('payVencimiento')}</label>
-                          <input
-                            type="text"
-                            id="card-expiracion"
-                            name="expiracion"
-                            className="form-input"
-                            placeholder="MM/YY"
-                            value={paymentData.expiracion}
-                            onChange={cambioInputPago}
-                            disabled={isProcessingPayment}
-                            required
-                          />
-                        </div>
-
-                        <div className="form-group">
-                          <label className="form-label" htmlFor="card-cvv">{t('payCvv')}</label>
-                          <input
-                            type="password"
-                            id="card-cvv"
-                            name="cvv"
-                            className="form-input"
-                            placeholder="•••"
-                            value={paymentData.cvv}
-                            onChange={cambioInputPago}
-                            disabled={isProcessingPayment}
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="payment-actions-row">
-                        <button
-                          type="button"
-                          className="btn-payment-cancel"
-                          onClick={() => setIsPaymentOpen(false)}
-                          disabled={isProcessingPayment}
-                        >
-                          {t('payCancelar')}
-                        </button>
-                        <button
-                          type="submit"
-                          className="btn-payment-submit"
-                          disabled={isProcessingPayment}
-                        >
-                          {isProcessingPayment ? (
-                            <span className="spinner-loader-row">
-                              <span className="payment-spinner"></span>
-                              {t('payVerificando')}
-                            </span>
-                          ) : (
-                            `${t('payPagarBoton')} ${cartTotal.toFixed(2)} €`
-                          )}
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Vinyl Details Modal Overlay */}
-      {selectedVinyl && (
-        <div className="detail-modal-overlay" onClick={() => setSelectedVinyl(null)}>
-          <div 
-            className="detail-modal-card fade-in" 
-            onClick={(e) => e.stopPropagation()}
-            style={{ '--modal-bg-image': selectedVinyl.portada ? `url(${selectedVinyl.portada})` : 'none' }}
-          >
-            <button 
-              type="button" 
-              className="btn-close-detail" 
-              onClick={() => setSelectedVinyl(null)}
-              title={t('payCancelar')}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-            
-            <div className="detail-layout-cols">
-              {/* Left Column: Vinyl Cover Sleeve with Slide Out Record */}
-              <div className="detail-cover-col">
-                <div className="detail-cover-wrapper">
-                  {selectedVinyl.portada ? (
-                    <img 
-                      src={selectedVinyl.portada} 
-                      alt={selectedVinyl.titulo} 
-                      className="detail-cover-img" 
-                      onError={(e) => { e.target.src = FALLBACK_SVG; }}
-                    />
-                  ) : (
-                    <div className="detail-fallback-cover">💿</div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Right Column: Detailed Information */}
-              <div className="detail-info-col">
-                <div className="detail-header-section">
-                  <span className="detail-category-badge">
-                    {selectedVinyl.categoria ? selectedVinyl.categoria.nombre : (idioma === 'es' ? 'General' : 'General')}
-                  </span>
-                  <h2 className="detail-title" title={selectedVinyl.titulo}>{selectedVinyl.titulo}</h2>
-                  <h3 className="detail-artist">
-                    {selectedVinyl.artista ? selectedVinyl.artista.nombre : (idioma === 'es' ? 'Artista Desconocido' : 'Unknown Artist')}
-                  </h3>
-                </div>
-                
-                <div className="detail-meta-grid">
-                  <div className="detail-meta-item">
-                    <span className="detail-meta-label">{t('anio')}</span>
-                    <span className="detail-meta-value">{selectedVinyl.anioLanzamiento}</span>
-                  </div>
-                </div>
-                
-                <div className="detail-description-section">
-                  <p className="detail-description-text">
-                    {selectedVinyl.descripcion || (idioma === 'es' ? 'Sin descripción disponible.' : 'No description available.')}
-                  </p>
-                </div>
-                
-                <div className="detail-price-section">
-                  <span className="detail-price-label">{t('precio')}</span>
-                  <span className="detail-price-value">{parseFloat(selectedVinyl.precio).toFixed(2)} €</span>
-                </div>
-                
-                <div className="detail-actions-row">
-                  <button 
-                    type="button" 
-                    className="btn-add-cart-detail" 
-                    onClick={() => {
-                      agregarAlCarrito(selectedVinyl);
-                      setSelectedVinyl(null);
-                    }}
-                    disabled={selectedVinyl.stock <= 0}
-                    title={selectedVinyl.stock <= 0 ? t('agotado') : t('anadirCarrito')}
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="9" cy="21" r="1"></circle>
-                      <circle cx="20" cy="21" r="1"></circle>
-                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                    </svg>
-                    <span>{t('anadirCarrito')}</span>
-                  </button>
-                  
-                  <button 
-                    type="button" 
-                    className="btn-buy-now-detail" 
-                    onClick={() => comprarYa(selectedVinyl)}
-                    disabled={selectedVinyl.stock <= 0}
-                    title={selectedVinyl.stock <= 0 ? t('agotado') : t('comprarYa')}
-                  >
-                    <span>{t('comprarYa')}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ModalDetallesVinilo
+        vinyl={selectedVinyl}
+        onClose={() => setSelectedVinyl(null)}
+        onAddToCart={agregarAlCarrito}
+        onBuyNow={comprarYa}
+      />
 
       {/* Toast Notification */}
       <div className={`toast-notification ${toast.type || 'success'} ${toast.show ? 'show' : ''}`}>

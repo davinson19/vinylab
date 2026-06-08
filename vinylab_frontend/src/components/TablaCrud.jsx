@@ -1,120 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { fetchApi } from '../utils/api';
+import TablaDatosCrud from './comunes/TablaDatosCrud';
+import ModalCrud from './comunes/ModalCrud';
 
-const FALLBACK_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="10" fill="%231e1e2e"/><circle cx="50" cy="50" r="40" fill="%230f0f15" stroke="%23313244" stroke-width="2"/><circle cx="50" cy="50" r="30" fill="none" stroke="%2345475a" stroke-dasharray="8,6" stroke-width="1"/><circle cx="50" cy="50" r="20" fill="none" stroke="%2345475a" stroke-dasharray="6,4" stroke-width="1"/><circle cx="50" cy="50" r="12" fill="%23cba6f7"/><circle cx="50" cy="50" r="4" fill="%230f0f15"/></svg>`;
-
-
-const SubirImagen = ({ value, onChange, label, required }) => {
-  const [dragActive, setDragActive] = useState(false);
-  const fileInputRef = useRef(null);
-
-  const archivo = (file) => {
-    if (!file) return;
-    
-    if (!file.type.startsWith('image/')) {
-      alert('Por favor, selecciona un archivo de imagen válido.');
-      return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      onChange(e.target.result); // Base64 string
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const arrastrar = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const soltar = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      archivo(e.dataTransfer.files[0]);
-    }
-  };
-
-  const modificarArchivo = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      archivo(e.target.files[0]);
-    }
-  };
-
-  const borrar = () => {
-    onChange('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const obtenerTamanoImagen = () => {
-    if (!value) return '';
-    if (value.startsWith('http')) return 'Imagen remota (URL)';
-    const bytes = Math.round((value.length * 3) / 4);
-    if (bytes < 1024) return `${bytes} B`;
-    const kb = (bytes / 1024).toFixed(1);
-    if (kb < 1024) return `${kb} KB`;
-    return `${(kb / 1024).toFixed(1)} MB`;
-  };
-
-  return (
-    <div className="form-group">
-      <label className="form-label">{label}</label>
-      <section className="image-input-container" aria-label="Cargador de imagen">
-        <div 
-          className={`image-dropzone ${dragActive ? 'drag-active' : ''}`}
-          onDragEnter={arrastrar}
-          onDragOver={arrastrar}
-          onDragLeave={arrastrar}
-          onDrop={soltar}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="file-input-hidden"
-            accept="image/*"
-            onChange={modificarArchivo}
-          />
-          <span className="dropzone-icon">🖼️</span>
-          <span className="dropzone-text">Arrastra una imagen aquí o haz clic para buscar</span>
-          <span className="dropzone-subtext">Soporta PNG, JPG, WEBP</span>
-        </div>
-
-        {value && (
-          <div className="image-preview-panel fade-in">
-            <div className="image-preview-box">
-              <img src={value} alt="Previsualización de portada" onError={(e) => { e.target.src = FALLBACK_SVG; }} />
-            </div>
-            <div className="image-preview-info">
-              <div className="image-preview-title" title={value.startsWith('data:') ? 'Imagen en Base64' : value}>
-                {value.startsWith('data:') ? 'Imagen cargada localmente' : value}
-              </div>
-              <div className="image-preview-size">{obtenerTamanoImagen()}</div>
-              <button 
-                type="button" 
-                className="btn-remove-image" 
-                onClick={borrar}
-              >
-                Eliminar Portada
-              </button>
-            </div>
-          </div>
-        )}
-      </section>
-    </div>
-  );
-};
-
-const TablaCrud = ({ endpoint, columns, title, formTitle, canAdd = true, expandableRowRender, refreshTrigger, onDeleteSuccess }) => {
+const TablaCrud = ({
+  endpoint,
+  columns,
+  title,
+  formTitle,
+  canAdd = true,
+  expandableRowRender,
+  refreshTrigger,
+  onDeleteSuccess
+}) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -130,7 +28,7 @@ const TablaCrud = ({ endpoint, columns, title, formTitle, canAdd = true, expanda
   const [formData, setFormData] = useState({});
   const [selectOptions, setSelectOptions] = useState({});
 
-  const cargarDatos = async () => {
+  const cargarDatos = useCallback(async () => {
     setLoading(true);
     try {
       const result = await fetchApi(`/${endpoint}`);
@@ -141,32 +39,41 @@ const TablaCrud = ({ endpoint, columns, title, formTitle, canAdd = true, expanda
     } finally {
       setLoading(false);
     }
-  };
+  }, [endpoint]);
 
   useEffect(() => {
-    cargarDatos();
+    let active = true;
+    
+    const inicializar = async () => {
+      // Defer state update to avoid synchronous setState inside useEffect warning
+      await Promise.resolve();
+      if (active) {
+        cargarDatos();
+      }
+    };
+    
+    inicializar();
+
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const eventSource = new EventSource(`${baseUrl}/realtime/sse`);
 
     eventSource.onmessage = (event) => {
       try {
         const payload = JSON.parse(event.data);
-        const { type, data } = payload;
+        const { type, data: eventData } = payload;
 
-        // Comprobar si el tipo de evento coincide con el recurso de la tabla actual (ej. 'vinilo_')
         if (type.startsWith(`${endpoint}_`)) {
-          console.log(`TablaCrud [${endpoint}] recibió evento en tiempo real:`, type, data);
+          console.log(`TablaCrud [${endpoint}] recibió evento en tiempo real:`, type, eventData);
           
           if (type === `${endpoint}_created`) {
             setData(prev => {
-              // Evitar duplicados
-              if (prev.some(item => item.id === data.id)) return prev;
-              return [data, ...prev];
+              if (prev.some(item => item.id === eventData.id)) return prev;
+              return [eventData, ...prev];
             });
           } else if (type === `${endpoint}_updated`) {
-            setData(prev => prev.map(item => item.id === data.id ? data : item));
+            setData(prev => prev.map(item => item.id === eventData.id ? eventData : item));
           } else if (type === `${endpoint}_deleted`) {
-            setData(prev => prev.filter(item => item.id !== data.id));
+            setData(prev => prev.filter(item => item.id !== eventData.id));
           }
         }
       } catch (err) {
@@ -180,9 +87,10 @@ const TablaCrud = ({ endpoint, columns, title, formTitle, canAdd = true, expanda
     };
 
     return () => {
+      active = false;
       eventSource.close();
     };
-  }, [endpoint]);
+  }, [endpoint, cargarDatos]);
 
   const isFirstMount = useRef(true);
   useEffect(() => {
@@ -191,7 +99,7 @@ const TablaCrud = ({ endpoint, columns, title, formTitle, canAdd = true, expanda
       return;
     }
     cargarDatos();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, cargarDatos]);
 
   useEffect(() => {
     const fetchOptions = async () => {
@@ -202,8 +110,8 @@ const TablaCrud = ({ endpoint, columns, title, formTitle, canAdd = true, expanda
             optionsData[col.key] = col.options;
           } else if (col.selectEndpoint) {
             try {
-              const data = await fetchApi(`/${col.selectEndpoint}`);
-              optionsData[col.key] = data;
+              const res = await fetchApi(`/${col.selectEndpoint}`);
+              optionsData[col.key] = res;
             } catch (err) {
               console.error(`Error fetching options for ${col.key}:`, err);
             }
@@ -215,22 +123,12 @@ const TablaCrud = ({ endpoint, columns, title, formTitle, canAdd = true, expanda
     fetchOptions();
   }, [columns]);
 
-  const esRequerido = (col) => {
-    if (col.key === 'id') return false;
-    if (col.required === false) return false;
-    if (typeof col.required === 'function') {
-      return col.required(editingId);
-    }
-    return true;
-  };
-
   const abrirModal = (item = null) => {
     if (item) {
       setEditingId(item.id);
       const copy = { ...item };
       delete copy.contrasena;
       
-      // Parse numeric fields to avoid sending them as strings if they are not edited
       columns.forEach(col => {
         if (col.type === 'number' && copy[col.key] !== undefined && copy[col.key] !== null && copy[col.key] !== '') {
           copy[col.key] = Number(copy[col.key]);
@@ -270,7 +168,6 @@ const TablaCrud = ({ endpoint, columns, title, formTitle, canAdd = true, expanda
   const enviarFormulario = async (e) => {
     e.preventDefault();
 
-    // Validar que no haya valores numéricos negativos
     for (const col of columns) {
       if (col.type === 'number') {
         const val = formData[col.key];
@@ -282,11 +179,8 @@ const TablaCrud = ({ endpoint, columns, title, formTitle, canAdd = true, expanda
     }
 
     try {
-      // Remove relationships or complex nested objects before sending
       const payload = { ...formData };
       
-      // Clean payload for standard foreign keys where we only need the ID
-      // You may need to adapt this depending on the exact DTOs
       Object.keys(payload).forEach(key => {
         if (typeof payload[key] === 'object' && payload[key] !== null) {
           delete payload[key];
@@ -358,174 +252,30 @@ const TablaCrud = ({ endpoint, columns, title, formTitle, canAdd = true, expanda
 
       {error && <div className="error-message spaced-error">{error}</div>}
 
-      <div className="crud-table-container">
-        {loading ? (
-          <div className="loading-message">Cargando datos...</div>
-        ) : (
-          <table className="crud-table">
-            <thead>
-              <tr>
-                {expandableRowRender && <th className="th-detail">Detalle</th>}
-                {columns.filter(col => !col.hideInTable).map(col => (
-                  <th key={col.key}>{col.label}</th>
-                ))}
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map(row => (
-                <React.Fragment key={row.id}>
-                  <tr>
-                    {expandableRowRender && (
-                      <td className="td-center">
-                        <button
-                          type="button"
-                          className="btn-expand"
-                          onClick={() => alternarExpansionFila(row.id)}
-                          title={expandedRows[row.id] ? "Contraer detalles" : "Expandir detalles"}
-                        >
-                          {expandedRows[row.id] ? '▼' : '▶'}
-                        </button>
-                      </td>
-                    )}
-                    {columns.filter(col => !col.hideInTable).map(col => {
-                      let cellValue = row[col.key];
-                      if (col.render) {
-                        cellValue = col.render(row);
-                      } else if (typeof cellValue === 'boolean') {
-                        cellValue = cellValue ? 'Sí' : 'No';
-                      } else if (typeof cellValue === 'object' && cellValue !== null) {
-                        // Fallback for nested objects
-                        cellValue = cellValue.nombre || cellValue.id || JSON.stringify(cellValue);
-                      }
-                      return <td key={col.key}>{cellValue}</td>;
-                    })}
-                    <td>
-                      <div className="table-actions">
-                        <button className="btn-icon" onClick={() => abrirModal(row)}>
-                          ✏️
-                        </button>
-                        <button className="btn-icon delete" onClick={() => eliminarRegistro(row.id)}>
-                          🗑️
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  {expandableRowRender && expandedRows[row.id] && (
-                    <tr className="expanded-row-details">
-                      <td colSpan={columns.filter(col => !col.hideInTable).length + 2}>
-                        <div className="expanded-details-container">
-                          {expandableRowRender(row)}
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-              {data.length === 0 && (
-                <tr>
-                  <td colSpan={columns.filter(col => !col.hideInTable).length + (expandableRowRender ? 2 : 1)} className="td-center">
-                    No hay registros
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
-      </div>
+      <TablaDatosCrud
+        columns={columns}
+        data={data}
+        loading={loading}
+        expandableRowRender={expandableRowRender}
+        expandedRows={expandedRows}
+        onToggleExpand={alternarExpansionFila}
+        onEdit={abrirModal}
+        onDelete={eliminarRegistro}
+      />
 
-      {isModalOpen && (
-        <div className="modal-overlay fade-in">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h3>{editingId ? 'Editar' : 'Agregar'} {formTitle || title}</h3>
-              <button className="modal-close" onClick={cerrarModal}>&times;</button>
-            </div>
-            <div className="modal-body">
-              <form id="crud-form" onSubmit={enviarFormulario}>
-                {columns.map(col => {
-                  if (col.key === 'id' && !editingId) return null; // usually auto-increment
-                  if (col.hideInForm) return null;
-                  
-                  if (col.type === 'image') {
-                    return (
-                      <SubirImagen
-                        key={col.key}
-                        label={col.label}
-                        value={formData[col.key] || ''}
-                        onChange={(val) => setFormData(prev => ({ ...prev, [col.key]: val }))}
-                        required={esRequerido(col) && !formData[col.key]}
-                      />
-                    );
-                  }
-                  
-                  return (
-                    <div className="form-group" key={col.key}>
-                      <label className="form-label">{col.label}</label>
-                      {col.type === 'select' ? (
-                        <select
-                          name={col.key}
-                          className="form-input"
-                          value={formData[col.key] !== undefined ? formData[col.key] : ''}
-                          onChange={cambioInput}
-                          disabled={col.key === 'id'}
-                          required={esRequerido(col)}
-                        >
-                          <option value="">Seleccione...</option>
-                          {(selectOptions[col.key] || []).map(opt => {
-                            const val = opt.id !== undefined ? opt.id : opt.value;
-                            const labelStr = opt.label || opt.nombre || val;
-                            return (
-                              <option key={val} value={val}>
-                                {labelStr}
-                              </option>
-                            );
-                          })}
-                        </select>
-                      ) : col.type === 'boolean' ? (
-                        <input
-                          type="checkbox"
-                          name={col.key}
-                          checked={formData[col.key] || false}
-                          onChange={cambioInput}
-                        />
-                      ) : col.type === 'textarea' ? (
-                        <textarea
-                          name={col.key}
-                          className="form-input form-textarea"
-                          value={formData[col.key] !== undefined ? formData[col.key] : ''}
-                          onChange={cambioInput}
-                          disabled={col.key === 'id'}
-                          required={esRequerido(col)}
-                          rows={3}
-                        />
-                      ) : (
-                        <input
-                          type={col.type || 'text'}
-                          name={col.key}
-                          className="form-input"
-                          value={formData[col.key] !== undefined ? formData[col.key] : ''}
-                          onChange={cambioInput}
-                          disabled={col.key === 'id'}
-                          required={esRequerido(col)}
-                          min={col.type === 'number' ? "0" : undefined}
-                          step={col.type === 'number' ? (col.key === 'precio' || col.key === 'importeTotal' ? 'any' : '1') : undefined}
-                        />
-                      )}
-                    </div>
-                  );
-                })}
-              </form>
-            </div>
-            <div className="modal-footer">
-              <button className="btn-secondary" onClick={cerrarModal}>Cancelar</button>
-              <button type="submit" form="crud-form" className="btn-primary btn-modal-save">
-                Guardar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ModalCrud
+        isOpen={isModalOpen}
+        onClose={cerrarModal}
+        editingId={editingId}
+        formTitle={formTitle}
+        title={title}
+        columns={columns}
+        formData={formData}
+        onChange={cambioInput}
+        onSubmit={enviarFormulario}
+        selectOptions={selectOptions}
+        setFormData={setFormData}
+      />
     </section>
   );
 };

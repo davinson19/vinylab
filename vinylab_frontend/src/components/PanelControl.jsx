@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TablaCrud from './TablaCrud';
+import SidebarAdmin from './admin/SidebarAdmin';
+import HeaderAdmin from './admin/HeaderAdmin';
 
 const FALLBACK_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="10" fill="%231e1e2e"/><circle cx="50" cy="50" r="40" fill="%230f0f15" stroke="%23313244" stroke-width="2"/><circle cx="50" cy="50" r="30" fill="none" stroke="%2345475a" stroke-dasharray="8,6" stroke-width="1"/><circle cx="50" cy="50" r="20" fill="none" stroke="%2345475a" stroke-dasharray="6,4" stroke-width="1"/><circle cx="50" cy="50" r="12" fill="%23cba6f7"/><circle cx="50" cy="50" r="4" fill="%230f0f15"/></svg>`;
-
 
 const PanelControl = ({ toggleTheme, isDarkMode, setToken }) => {
   const navigate = useNavigate();
@@ -214,78 +215,19 @@ const PanelControl = ({ toggleTheme, isDarkMode, setToken }) => {
         <div className="admin-sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>
       )}
 
-      {/* Mobile Admin Header */}
-      <header className="admin-mobile-header">
-        <button 
-          type="button" 
-          className={`admin-hamburger-btn ${isSidebarOpen ? 'active' : ''}`}
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          title="Menú de Administración"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
-      </header>
+      <HeaderAdmin isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
 
-      <aside className={`admin-sidebar ${isSidebarOpen ? 'open' : ''}`}>
-        <div className="admin-sidebar-header">
-          <h2>VinyLab</h2>
-          {/* Mobile Close Button in Sidebar */}
-          <button 
-            type="button" 
-            className="admin-sidebar-close-btn" 
-            onClick={() => setIsSidebarOpen(false)}
-            title="Cerrar menú"
-          >
-            &times;
-          </button>
-        </div>
-        <nav className="admin-sidebar-menu" aria-label="Menú de administración">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              className={`admin-menu-btn ${activeTab === tab.id ? 'active' : ''}`}
-              onClick={() => {
-                setActiveTab(tab.id);
-                setIsSidebarOpen(false);
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-        <div className="admin-sidebar-footer">
-          <button 
-            className="admin-menu-btn admin-sidebar-theme-btn" 
-            onClick={toggleTheme}
-            title={isDarkMode ? 'Cambiar a Modo Día' : 'Cambiar a Modo Noche'}
-          >
-            {isDarkMode ? (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="5"></circle>
-                <line x1="12" y1="1" x2="12" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="23"></line>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                <line x1="1" y1="12" x2="3" y2="12"></line>
-                <line x1="21" y1="12" x2="23" y2="12"></line>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-              </svg>
-            ) : (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-              </svg>
-            )}
-          </button>
-          <button className="admin-logout-btn" onClick={() => { cierreSesion(); setIsSidebarOpen(false); }}>
-            Cerrar Sesión
-          </button>
-        </div>
-      </aside>
+      <SidebarAdmin
+        isOpen={isSidebarOpen}
+        setIsOpen={setIsSidebarOpen}
+        tabs={tabs}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        toggleTheme={toggleTheme}
+        isDarkMode={isDarkMode}
+        cierreSesion={cierreSesion}
+      />
+
       <main className="admin-content">
         {activeTab === 'catalogo' ? (
           mostrarCatalogo()
@@ -303,7 +245,6 @@ const PanelControl = ({ toggleTheme, isDarkMode, setToken }) => {
             />
           )
         )}
-
       </main>
     </div>
   );

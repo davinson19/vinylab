@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Auth from './components/Auth';
 import PanelControl from './components/PanelControl';
@@ -55,7 +55,7 @@ function App() {
         return <Navigate to="/admin" replace />;
       }
       return <Navigate to="/catalogo" replace />;
-    } catch (e) {
+    } catch {
       localStorage.removeItem('token');
       return <Auth toggleTheme={alternarTema} isDarkMode={isDarkMode} setToken={setToken} />;
     }
