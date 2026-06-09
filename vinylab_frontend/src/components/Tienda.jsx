@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { fetchApi } from '../utils/api';
 import Footer from './Footer';
 import { useLanguage } from '../utils/LanguageContext';
-
-// Import subcomponents
 import NavbarTienda from './tienda/NavbarTienda';
 import MenuMovil from './tienda/MenuMovil';
 import BannerBienvenida from './tienda/BannerBienvenida';
@@ -16,19 +14,20 @@ import Carrito from './tienda/Carrito';
 import ModalPago from './tienda/ModalPago';
 import ModalDetallesVinilo from './tienda/ModalDetallesVinilo';
 
+// Pantalla principal de la tienda para los clientes, donde pueden explorar vinilos, filtrar, comprar y gestionar su perfil.
 const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
   const { t } = useLanguage();
 
-  // States
+  // Estados
   const [activeView, setActiveView] = useState('store'); // 'store' | 'profile' | 'orders'
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Profile Form States
+  // Estados del formulario del perfil
   const [profileData, setProfileData] = useState({
     nombre: '',
     email: '',
@@ -39,7 +38,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
   const [profileSuccess, setProfileSuccess] = useState('');
   const [profileError, setProfileError] = useState('');
 
-  // Real Database Data States
+  // Estados de la base de datos
   const [vinyls, setVinyls] = useState([]);
   const [loadingVinyls, setLoadingVinyls] = useState(true);
   const [dbCategories, setDbCategories] = useState(['Todos']);
@@ -47,7 +46,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Decode user ID from token
+  // Decodifica el ID de usuario del token
   const token = localStorage.getItem('token');
   let userId = null;
   if (token) {
@@ -59,7 +58,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     }
   }
 
-  // Cart States (Persisted in localStorage)
+  // Estados del carrito (persistencia en localStorage)
   const [cart, setCart] = useState(() => {
     if (!userId) return [];
     const saved = localStorage.getItem(`vinylab_cart_${userId}`);
@@ -67,10 +66,11 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // Toast notification state
+  // Estados de notificación toast
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const toastTimeoutRef = useRef(null);
 
+  // Muestra un aviso rápido flotante en pantalla, como "Añadido al carrito", que desaparece a los 3 segundos.
   const showToast = useCallback((message, type = 'success') => {
     if (toastTimeoutRef.current) {
       clearTimeout(toastTimeoutRef.current);
@@ -81,11 +81,11 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     }, 3000);
   }, []);
 
-  // Orders States
+  // Estados de los pedidos
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
 
-  // Payment Gateway States
+  // Estados del pasarela de pago
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [paymentData, setPaymentData] = useState({
     numero: '',
@@ -98,13 +98,13 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
   const [paymentError, setPaymentError] = useState('');
   const [selectedVinyl, setSelectedVinyl] = useState(null);
 
-  // Synchronize cart with localStorage
+  // Sincroniza el carrito con localStorage
   useEffect(() => {
     if (!userId) return;
     localStorage.setItem(`vinylab_cart_${userId}`, JSON.stringify(cart));
   }, [cart, userId]);
 
-  // Load vinyls and categories from database
+  // Descarga la lista completa de discos de vinilo disponibles
   const cargarVinilos = useCallback(async () => {
     setLoadingVinyls(true);
     try {
@@ -117,6 +117,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     }
   }, []);
 
+  // Descarga los géneros o categorías musicales
   const cargarCategorias = useCallback(async () => {
     try {
       const data = await fetchApi('/categoria');
@@ -127,6 +128,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     }
   }, []);
 
+  // Descarga las compras y pedidos realizados anteriormente por este cliente
   const cargarPedidos = useCallback(async () => {
     setLoadingOrders(true);
     try {
@@ -140,11 +142,10 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     }
   }, []);
 
-  // Fetch data on mount
+  // Descarga los datos del usuario en cuanto se accede a la tienda
   useEffect(() => {
     let active = true;
     const fetchOnMount = async () => {
-      // Defer to microtask queue to avoid synchronous setState inside useEffect warning
       await Promise.resolve();
       if (active) {
         cargarVinilos();
@@ -157,7 +158,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     };
   }, [cargarVinilos, cargarCategorias]);
 
-  // Cleanup toast timer on unmount
+  // Limpia el temporizador del toast al salir de la tienda
   useEffect(() => {
     return () => {
       if (toastTimeoutRef.current) {
@@ -166,7 +167,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     };
   }, []);
 
-  // Fetch current user details on mount
+  // Carga los datos del usuario
   useEffect(() => {
     let active = true;
     const loadUserProfile = async () => {
@@ -183,7 +184,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
             nombre: data.nombre || '',
             email: data.email || '',
             direccion: data.direccion || '',
-            contrasena: '' // leave password blank
+            contrasena: ''
           });
         }
       } catch (err) {
@@ -199,7 +200,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     };
   }, [userId]);
 
-  // Load orders when active view is 'orders'
+  // Carga los pedidos cuando la vista activa es 'orders'
   useEffect(() => {
     let active = true;
     const fetchOrdersView = async () => {
@@ -227,12 +228,14 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     };
   }, []);
 
+  // Cierra sesión
   const cierreSesion = () => {
     localStorage.removeItem('token');
     setToken(null);
     navigate('/');
   };
 
+  // Actualiza los datos del perfil
   const cambioPerfil = (e) => {
     const { name, value } = e.target;
     setProfileData(prev => ({
@@ -241,6 +244,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     }));
   };
 
+  // Guarda la información actualizada del perfil del usuario en la base de datos
   const enviarPerfil = async (e) => {
     e.preventDefault();
     setSavingProfile(true);
@@ -271,7 +275,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
       setUser(response.user || response);
       setProfileData(prev => ({
         ...prev,
-        contrasena: '' // Clear password field
+        contrasena: ''
       }));
       setProfileSuccess('¡Perfil actualizado con éxito!');
     } catch (err) {
@@ -281,7 +285,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     }
   };
 
-  // Cart Operations
+  // Añade un vinilo a la cesta de compra si todavía queda suficiente cantidad en la tienda
   const agregarAlCarrito = (vinyl) => {
     setCart(prevCart => {
       const existing = prevCart.find(item => item.id === vinyl.id);
@@ -307,6 +311,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     });
   };
 
+  // Ajusta la cantidad deseada de un disco en el carrito, asegurando que no exceda las unidades disponibles
   const actualizarCantidad = (vinylId, newQty, stock) => {
     if (newQty < 1) return;
     if (newQty > stock) {
@@ -320,10 +325,12 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     );
   };
 
+  // Quita por completo un artículo de la cesta de compras
   const eliminarDelCarrito = (vinylId) => {
     setCart(prevCart => prevCart.filter(item => item.id !== vinylId));
   };
 
+  // Elimina de golpe todos los elementos guardados en la cesta de compras
   const vaciarCarrito = () => {
     setCart([]);
   };
@@ -331,6 +338,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
   const cartTotal = cart.reduce((total, item) => total + (parseFloat(item.precio) * item.quantity), 0);
 
+  // Muestra la ventana para rellenar los datos de pago y realizar el pedido
   const abrirPasarelaPago = () => {
     if (cart.length === 0) return;
     setPaymentError('');
@@ -344,6 +352,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     setIsCartOpen(false); // Close cart drawer
   };
 
+  // Añade directamente el producto a la cesta y abre de inmediato la pantalla de pago
   const comprarYa = (vinyl) => {
     if (vinyl.stock <= 0) {
       showToast(t('noQuedanUnidades'), 'error');
@@ -363,6 +372,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     setIsCartOpen(false);
   };
 
+  // Organiza el texto y añade separadores automáticamente mientras el usuario escribe la tarjeta y fecha de caducidad
   const cambioInputPago = (e) => {
     let { name, value } = e.target;
     
@@ -386,6 +396,7 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     }));
   };
 
+  // Valida que el formato de los datos bancarios sea correcto, simula la transferencia y envía el pedido al servidor
   const enviarPago = async (e) => {
     e.preventDefault();
     setPaymentError('');
@@ -419,7 +430,6 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     setIsProcessingPayment(true);
 
     try {
-      // Simulate validation / bank delay
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       const payload = {
@@ -440,13 +450,12 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
       setIsProcessingPayment(false);
       setIsPaymentSuccess(true);
 
-      // Auto redirect after 2.5 seconds
       setTimeout(() => {
         setCart([]);
         setIsPaymentOpen(false);
         setIsPaymentSuccess(false);
-        cargarVinilos(); // Reload vinyls to refresh stocks
-        setActiveView('orders'); // Open orders view
+        cargarVinilos(); 
+        setActiveView('orders'); 
       }, 2500);
 
     } catch (err) {
@@ -455,13 +464,14 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
     }
   };
 
+  // Recarga los discos y las categorías al mismo tiempo para actualizar la página de la tienda.
   const actualizarTienda = async () => {
     setIsRefreshing(true);
     await Promise.all([cargarVinilos(), cargarCategorias()]);
     setIsRefreshing(false);
   };
 
-  // Filter vinyls dynamically
+  // Filtra los vinilos dinámicamente
   const filteredVinyls = vinyls.filter(vinyl => {
     const matchesCategory = activeCategory === 'Todos' || activeCategory === 'All' || (vinyl.categoria && vinyl.categoria.nombre === activeCategory);
     
@@ -507,8 +517,6 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
       />
 
       {activeView === 'store' && <BannerBienvenida user={user} />}
-
-      {/* Main Content Area */}
       <main className="store-content">
         {activeView === 'store' ? (
           <div className="fade-in">
@@ -582,7 +590,6 @@ const Tienda = ({ toggleTheme, isDarkMode, setToken }) => {
         onBuyNow={comprarYa}
       />
 
-      {/* Toast Notification */}
       <div className={`toast-notification ${toast.type || 'success'} ${toast.show ? 'show' : ''}`}>
         <div className="toast-content">
           {toast.type === 'error' ? (

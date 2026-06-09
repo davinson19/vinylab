@@ -1,6 +1,4 @@
-/* ==========================================================================
-   "Mis Pedidos" (Order History) View Styles
-   ========================================================================== */
+/* Estilos visuales del historial de pedidos del cliente */
 .orders-view-container {
   display: flex;
   flex-direction: column;
@@ -90,8 +88,7 @@
 }
 
 .order-status-badge.pagado,
-.order-status-badge.pendiente_envio,
-.order-status-badge.pendiente_de_envío {
+.order-status-badge.pendiente_envio {
   color: #d97706;
   background: rgba(217, 119, 6, 0.12);
   border: 1px solid rgba(217, 119, 6, 0.2);

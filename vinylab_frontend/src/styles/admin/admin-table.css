@@ -1,3 +1,4 @@
+/* Estilos visuales para las tablas CRUD en la vista de admin*/
 .crud-table-container {
   background: var(--surface);
   border: 1px solid var(--surface-border);
@@ -255,15 +256,6 @@
 
 .col-cover {
   width: 60px;
-}
-
-.table-portada-preview-small {
-  width: 40px;
-  height: 40px;
-}
-
-.table-portada-fallback-small {
-  font-size: 1rem;
 }
 
 .th-detail {

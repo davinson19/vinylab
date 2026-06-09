@@ -1,4 +1,4 @@
-/* Empty Store State (Stunning UI) */
+/* Estilos y animaciones del vinilo giratorio que sirve de pantalla de carga y de catálogo vacío (probablemente estos estilos no se vean a no ser que se acceda al catálogo sin álbumes cargados) */
 .empty-store-container {
   display: flex;
   flex-direction: column;

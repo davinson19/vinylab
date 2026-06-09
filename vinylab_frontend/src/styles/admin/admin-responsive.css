@@ -1,4 +1,4 @@
-/* Media Queries for Admin */
+/* Media Queries para ajustar la vista de admin en móviles y tablets */
 @media (max-width: 768px) {
   .admin-layout {
     flex-direction: column;

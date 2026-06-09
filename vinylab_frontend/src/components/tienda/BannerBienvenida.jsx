@@ -1,6 +1,7 @@
 import welcomeGif from '../../assets/banner.gif';
 import { useLanguage } from '../../utils/LanguageContext';
 
+// Banner con imagen animada de fondo y saludo personalizado
 const BannerBienvenida = ({ user }) => {
   const { idioma } = useLanguage();
 

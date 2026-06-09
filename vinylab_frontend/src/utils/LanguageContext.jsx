@@ -7,7 +7,7 @@ const translations = {
     // Footer
     copyright: "Todos los derechos reservados.",
     
-    // Auth Page
+    // Login / Registro
     nombre: "Nombre",
     nombrePlaceholder: "Tu nombre completo",
     email: "Correo Electrónico",
@@ -26,7 +26,7 @@ const translations = {
     exitoLogin: "¡Inicio de sesión exitoso!",
     exitoRegistro: "¡Registro completado exitosamente! Ahora puedes iniciar sesión.",
     
-    // Catalog / Navbar
+    // Catálogo / Barra de navegación
     tienda: "VinyLab",
     verCarrito: "Ver Carrito de Compras",
     modoDia: "Cambiar a Modo Día",
@@ -56,7 +56,7 @@ const translations = {
     soloQuedanParte1: "Lo sentimos, solo hay ",
     soloQuedanParte2: " unidades disponibles.",
     
-    // Orders View
+    // Historial de pedidos
     pedidosTitulo: "Historial de pedidos",
     pedidosSub: "Consulta el historial y los detalles de tus compras en VinyLab",
     noPedidos: "No tienes pedidos",
@@ -72,7 +72,7 @@ const translations = {
     cantidadLabel: "Cantidad",
     totalPagadoLabel: "Total pagado:",
     
-    // Profile View
+    // Perfil del usuario
     profileTitulo: "Configuración de Usuario",
     profileSub: "Administra y actualiza la información de tu perfil de VinyLab",
     profileNombre: "Nombre Completo",
@@ -85,7 +85,7 @@ const translations = {
     profileGuardar: "Guardar Cambios",
     profileExito: "¡Perfil actualizado con éxito!",
     
-    // Cart Drawer
+    // Carrito de compra
     cartTitulo: "Tu carrito",
     cartVaciar: "Vaciar",
     cartVacio: "Tu carrito está vacío",
@@ -96,7 +96,7 @@ const translations = {
     cartArticulos: "artículos",
     cartComprar: "Completar Compra",
     
-    // Payment Gateway
+    // Pasarela de pago
     payResumen: "Resumen de Pago",
     payTotalPagar: "Total a Pagar:",
     payIntroduceTarjeta: "Introduce tu tarjeta",
@@ -113,7 +113,7 @@ const translations = {
     payErrorExp: "La fecha de expiración debe tener formato MM/YY.",
     payErrorCvv: "El código CVV debe tener 3 dígitos.",
     
-    // Vinyl Details
+    // Detalles del vinilo
     detallesVinilo: "Detalles del vinilo",
     comprarYa: "Comprar ya",
     anio: "Año de lanzamiento",
@@ -125,7 +125,7 @@ const translations = {
     // Footer
     copyright: "All rights reserved.",
     
-    // Auth Page
+    // Login / Registro
     nombre: "Name",
     nombrePlaceholder: "Your full name",
     email: "Email Address",
@@ -144,7 +144,7 @@ const translations = {
     exitoLogin: "Login successful!",
     exitoRegistro: "Registration completed successfully! You can now log in.",
     
-    // Catalog / Navbar
+    // Catálogo / Barra de navegación
     tienda: "VinyLab",
     verCarrito: "View Shopping Cart",
     modoDia: "Switch to Day Mode",
@@ -174,7 +174,7 @@ const translations = {
     soloQuedanParte1: "Sorry, there are only ",
     soloQuedanParte2: " units available.",
     
-    // Orders View
+    // Historial de pedidos
     pedidosTitulo: "Order History",
     pedidosSub: "Check the history and details of your purchases in VinyLab",
     noPedidos: "You have no orders",
@@ -190,7 +190,7 @@ const translations = {
     cantidadLabel: "Quantity",
     totalPagadoLabel: "Total paid:",
     
-    // Profile View
+    // Perfil del usuario
     profileTitulo: "User Settings",
     profileSub: "Manage and update your VinyLab profile information",
     profileNombre: "Full Name",
@@ -203,7 +203,7 @@ const translations = {
     profileGuardar: "Save Changes",
     profileExito: "Profile updated successfully!",
     
-    // Cart Drawer
+    // Carrito de compra
     cartTitulo: "Your cart",
     cartVaciar: "Empty",
     cartVacio: "Your cart is empty",
@@ -214,7 +214,7 @@ const translations = {
     cartArticulos: "items",
     cartComprar: "Complete Purchase",
     
-    // Payment Gateway
+    // Pasarela de pago
     payResumen: "Payment Summary",
     payTotalPagar: "Total to Pay:",
     payIntroduceTarjeta: "Enter your card details",
@@ -231,7 +231,7 @@ const translations = {
     payErrorExp: "Expiration date must be in MM/YY format.",
     payErrorCvv: "CVV code must be 3 digits.",
     
-    // Vinyl Details
+    // Detalles del vinilo
     detallesVinilo: "Vinyl details",
     comprarYa: "Buy now",
     anio: "Release year",
@@ -241,6 +241,7 @@ const translations = {
   }
 };
 
+// Proveedor de idioma que guarda la preferencia del usuario y traduce los textos del sitio web.
 export const LanguageProvider = ({ children }) => {
   const [idioma, setIdioma] = useState(() => {
     return localStorage.getItem('idioma') || 'es';
@@ -250,12 +251,14 @@ export const LanguageProvider = ({ children }) => {
     localStorage.setItem('idioma', idioma);
   }, [idioma]);
 
+  // Cambia el idioma actual y lo guarda en el almacenamiento del navegador.
   const cambiarIdioma = (nuevoIdioma) => {
     if (translations[nuevoIdioma]) {
       setIdioma(nuevoIdioma);
     }
   };
 
+  // Obtiene el texto traducido según la palabra clave que le pasemos.
   const t = (key) => {
     return translations[idioma]?.[key] || translations['es']?.[key] || key;
   };
@@ -267,11 +270,11 @@ export const LanguageProvider = ({ children }) => {
   );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
+// Hook que permite a cualquier componente obtener fácilmente las traducciones y cambiar el idioma
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
   if (!context) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
+    throw new Error('useLanguage debe estar dentro de un LanguageProvider');
   }
   return context;
 };

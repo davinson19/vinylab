@@ -1,3 +1,4 @@
+// Cabecera superior para dispositivos móviles que permite abrir y cerrar el menú de navegación de administración
 const HeaderAdmin = ({ isSidebarOpen, setIsSidebarOpen }) => {
   return (
     <header className="admin-mobile-header">

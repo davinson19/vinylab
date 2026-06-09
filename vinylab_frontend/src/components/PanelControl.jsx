@@ -1,20 +1,21 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import TablaCrud from './TablaCrud';
+import TablaCrud from './admin/TablaCrud';
 import SidebarAdmin from './admin/SidebarAdmin';
 import HeaderAdmin from './admin/HeaderAdmin';
 
 const FALLBACK_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="10" fill="%231e1e2e"/><circle cx="50" cy="50" r="40" fill="%230f0f15" stroke="%23313244" stroke-width="2"/><circle cx="50" cy="50" r="30" fill="none" stroke="%2345475a" stroke-dasharray="8,6" stroke-width="1"/><circle cx="50" cy="50" r="20" fill="none" stroke="%2345475a" stroke-dasharray="6,4" stroke-width="1"/><circle cx="50" cy="50" r="12" fill="%23cba6f7"/><circle cx="50" cy="50" r="4" fill="%230f0f15"/></svg>`;
 
+// Panel principal de admin desde donde se gestionan usuarios, vinilos y pedidos
 const PanelControl = ({ toggleTheme, isDarkMode, setToken }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('usuarios');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Triggers de refresco compartidos para borrados en cascada
   const [viniloRefreshTrigger, setViniloRefreshTrigger] = useState(0);
   const [pedidoRefreshTrigger, setPedidoRefreshTrigger] = useState(0);
 
+  // Cierra la sesión borrando los datos guardados en el navegador y volviendo a la página de acceso
   const cierreSesion = () => {
     localStorage.removeItem('token');
     setToken(null);
@@ -27,6 +28,7 @@ const PanelControl = ({ toggleTheme, isDarkMode, setToken }) => {
     { id: 'pedidos', label: 'Pedidos' },
   ];
 
+  // Configura columnas, nombres y campos según la pestaña activa
   const obtenerConfiguracionTabla = () => {
     switch (activeTab) {
       case 'usuarios':
@@ -50,6 +52,7 @@ const PanelControl = ({ toggleTheme, isDarkMode, setToken }) => {
 
   const config = obtenerConfiguracionTabla();
 
+  // Muestra el catálogo con tablas para gestionar vinilos, categorías y artistas
   const mostrarCatalogo = () => (
     <div className="admin-column-layout">
       <TablaCrud 
@@ -117,6 +120,7 @@ const PanelControl = ({ toggleTheme, isDarkMode, setToken }) => {
     </div>
   );
 
+  // Muestra los pedidos con un desglose de los productos comprados
   const mostrarPedidos = () => (
     <div className="admin-column-layout">
       <TablaCrud 
@@ -210,7 +214,6 @@ const PanelControl = ({ toggleTheme, isDarkMode, setToken }) => {
 
   return (
     <div className="admin-layout">
-      {/* Mobile Sidebar Overlay Backdrop */}
       {isSidebarOpen && (
         <div className="admin-sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>
       )}
@@ -236,7 +239,7 @@ const PanelControl = ({ toggleTheme, isDarkMode, setToken }) => {
         ) : (
           config && (
             <TablaCrud 
-              key={config.endpoint} // reset state on tab change
+              key={config.endpoint}
               endpoint={config.endpoint}
               columns={config.columns}
               title={config.title}

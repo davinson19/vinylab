@@ -1,3 +1,4 @@
+// Barra lateral izquierda del panel de administración que organiza las pestañas, controla el modo día/noche y permite cerrar sesión
 const SidebarAdmin = ({
   isOpen,
   setIsOpen,

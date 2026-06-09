@@ -1,6 +1,4 @@
-/* ==========================================================================
-   Store Mobile Responsive Rules
-   ========================================================================== */
+/* Media Queries para adaptar la tienda a pantallas de móviles y tablets */
 
 @media (min-width: 768px) {
   .store-footer-content {
@@ -91,23 +89,15 @@
     height: 220px;
   }
 
-  /* Cart sidebar adaptive width */
   .cart-drawer {
     max-width: 100%;
   }
 
-  /* Profile views and forms scaling */
   .profile-card {
     padding: 1.5rem;
     border-radius: 20px;
   }
 
-  .profile-actions-row {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  /* Order details row responsive layout */
   .order-card-header {
     grid-template-columns: 1fr 1fr;
     padding: 1rem 1.25rem;
@@ -141,7 +131,6 @@
     padding: 1rem 1.25rem;
   }
 
-  /* Payment Gateway adaptive styling */
   .payment-modal-overlay {
     padding: 0.75rem;
     align-items: flex-start;
@@ -186,7 +175,6 @@
     gap: 2rem;
   }
 
-  /* Vinyl details modal adaptive */
   .detail-layout-cols {
     grid-template-columns: 1fr;
     gap: 2rem;

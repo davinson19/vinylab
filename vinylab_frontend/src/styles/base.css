@@ -1,3 +1,4 @@
+/* Ajustes iniciales para resetear márgenes, definir tipografías y el fondo de pantalla con degradados */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -20,7 +21,6 @@ body {
     radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.08) 0px, transparent 50%);
 }
 
-/* Animations */
 .fade-in {
   animation: fadeIn 0.4s ease-out;
 }

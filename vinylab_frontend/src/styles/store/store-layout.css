@@ -1,3 +1,4 @@
+/* Diseño de la estructura principal de la tienda */
 .store-layout {
   display: flex;
   flex-direction: column;
@@ -8,7 +9,6 @@
   overflow-x: hidden;
 }
 
-/* Navbar styles */
 .store-navbar {
   position: sticky;
   top: 0;
@@ -66,7 +66,6 @@
   gap: 1.25rem;
 }
 
-/* Common Header Buttons */
 .nav-btn {
   background: var(--surface);
   border: 1px solid var(--surface-border);
@@ -95,7 +94,6 @@
   transform: translateY(0);
 }
 
-/* User Account Button with Dropdown Container */
 .user-dropdown-container {
   position: relative;
 }
@@ -134,7 +132,6 @@
   color: var(--primary);
 }
 
-/* Premium Dropdown Menu */
 .user-dropdown-menu {
   position: absolute;
   top: 55px;
@@ -181,14 +178,6 @@
   text-overflow: ellipsis;
 }
 
-.dropdown-user-role {
-  font-size: 0.75rem;
-  color: var(--primary);
-  font-weight: 500;
-  text-transform: uppercase;
-  margin-top: 0.15rem;
-}
-
 .dropdown-item {
   background: transparent;
   border: none;
@@ -232,7 +221,6 @@
   color: var(--error);
 }
 
-/* Store Content Layout */
 .store-content {
   flex: 1;
   padding: 3rem 2rem;
@@ -242,7 +230,6 @@
   box-sizing: border-box;
 }
 
-/* Toast Notification Styles */
 .toast-notification {
   position: fixed;
   bottom: 2rem;
@@ -310,7 +297,6 @@
   100% { transform: scale(1); }
 }
 
-/* Footer Styles */
 .store-footer {
   background: var(--surface);
   border-top: 1px solid var(--surface-border);
@@ -359,7 +345,6 @@
   margin: 0;
 }
 
-/* Specific styling for footer when on Auth page */
 body.auth-page .store-footer {
   position: absolute;
   bottom: 0;
@@ -374,7 +359,6 @@ body.auth-page.light-mode .store-footer {
   border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-/* Footer Language Dropdown Styles */
 .store-footer-language {
   display: flex;
   align-items: center;
@@ -426,7 +410,6 @@ body.auth-page.light-mode .store-footer {
   font-weight: 500;
 }
 
-/* Store layout utility additions */
 .nav-btn-relative {
   position: relative;
 }
@@ -446,7 +429,6 @@ body.auth-page.light-mode .store-footer {
   margin-top: 0;
 }
 
-/* Navbar responsive structure */
 .desktop-nav-actions {
   display: flex;
   align-items: center;
@@ -457,7 +439,6 @@ body.auth-page.light-mode .store-footer {
   display: none;
 }
 
-/* Mobile menu drawer styling */
 .mobile-menu-overlay {
   position: fixed;
   top: 0;

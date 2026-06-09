@@ -1,3 +1,4 @@
+/* Tipografías y variables de colores del sitio para los temas claro y oscuro. */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
 @font-face {
@@ -7,10 +8,11 @@
   font-style: normal;
 }
 
+/* Variables de color para el modo oscuro. */
 :root {
   --primary: #cca404;
   --primary-hover: #a38303;
-  --primary-btn-text: #070707; /* High contrast dark text (8.52:1) for primary background in dark mode */
+  --primary-btn-text: #070707;
   --background: #070707;
   --surface: rgba(18, 18, 18, 0.8);
   --surface-border: rgba(255, 255, 255, 0.08);
@@ -22,10 +24,11 @@
   --success: #10b981;
 }
 
+/* Variables de color para el modo claro. */
 .light-mode {
-  --primary: #856404; /* High contrast gold/bronze (5.25:1) against #f8fafc in light mode */
+  --primary: #856404;
   --primary-hover: #6c5103;
-  --primary-btn-text: #ffffff; /* High contrast white text (5.49:1) for primary background in light mode */
+  --primary-btn-text: #ffffff;
   --background: #f8fafc;
   --surface: rgba(255, 255, 255, 0.95);
   --surface-border: rgba(0, 0, 0, 0.08);
@@ -33,6 +36,6 @@
   --primary-shadow: rgba(133, 100, 4, 0.25);
   --text: #0f172a;
   --text-muted: #64748b;
-  --error: #b91c1c; /* High contrast red (6.18:1) against #f8fafc in light mode */
-  --success: #15803d; /* High contrast green (4.79:1) against #f8fafc in light mode */
+  --error: #b91c1c;
+  --success: #15803d; 
 }

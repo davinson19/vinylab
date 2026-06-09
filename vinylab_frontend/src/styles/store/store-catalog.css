@@ -1,4 +1,4 @@
-/* Vinyl Catalog Grid and Card Styles */
+/* Estilos de las cards de los vinilos y del grid en la tienda */
 .vinyl-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -107,11 +107,6 @@
   border-radius: 6px;
 }
 
-.vinyl-stock-badge.in-stock {
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.1);
-}
-
 .vinyl-stock-badge.low-stock {
   color: #f59e0b;
   background: rgba(245, 158, 11, 0.1);
@@ -166,7 +161,6 @@
   border-color: var(--surface-border);
 }
 
-/* Fallback icons/texts sizes */
 .fallback-cover-large {
   font-size: 4.5rem;
   user-select: none;

@@ -1,5 +1,6 @@
 import { useLanguage } from '../../utils/LanguageContext';
 
+// Barra para buscar vinilos por texto y filtrar por categoría musical
 const BarraFiltros = ({
   searchQuery,
   setSearchQuery,

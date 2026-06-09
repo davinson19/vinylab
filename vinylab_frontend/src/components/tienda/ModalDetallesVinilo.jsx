@@ -2,6 +2,7 @@ import { useLanguage } from '../../utils/LanguageContext';
 
 const FALLBACK_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="10" fill="%231e1e2e"/><circle cx="50" cy="50" r="40" fill="%230f0f15" stroke="%23313244" stroke-width="2"/><circle cx="50" cy="50" r="30" fill="none" stroke="%2345475a" stroke-dasharray="8,6" stroke-width="1"/><circle cx="50" cy="50" r="20" fill="none" stroke="%2345475a" stroke-dasharray="6,4" stroke-width="1"/><circle cx="50" cy="50" r="12" fill="%23cba6f7"/><circle cx="50" cy="50" r="4" fill="%230f0f15"/></svg>`;
 
+// Ventana flotante de detalles del vinilo que muestra la información completa del disco y permite comprarlo o añadirlo al carrito
 const ModalDetallesVinilo = ({ vinyl, onClose, onAddToCart, onBuyNow }) => {
   const { idioma, t } = useLanguage();
 
@@ -27,7 +28,7 @@ const ModalDetallesVinilo = ({ vinyl, onClose, onAddToCart, onBuyNow }) => {
         </button>
         
         <div className="detail-layout-cols">
-          {/* Left Column: Vinyl Cover Sleeve with Slide Out Record */}
+          {/* Portada de vinilo */}
           <div className="detail-cover-col">
             <div className="detail-cover-wrapper">
               {vinyl.portada ? (
@@ -43,7 +44,7 @@ const ModalDetallesVinilo = ({ vinyl, onClose, onAddToCart, onBuyNow }) => {
             </div>
           </div>
           
-          {/* Right Column: Detailed Information */}
+          {/* Información del vinilo y botones de compra */}
           <div className="detail-info-col">
             <div className="detail-header-section">
               <span className="detail-category-badge">

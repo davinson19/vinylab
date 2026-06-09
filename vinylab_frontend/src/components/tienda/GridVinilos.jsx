@@ -1,6 +1,7 @@
 import TarjetaVinilo from './TarjetaVinilo';
 import { useLanguage } from '../../utils/LanguageContext';
 
+// Grid de la tienda que organiza y dibuja los vinilos en venta con animacion de carga
 const GridVinilos = ({
   vinyls,
   filteredVinyls,

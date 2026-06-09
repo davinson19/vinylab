@@ -1,6 +1,7 @@
 import logo from '../assets/logo.png';
 import { useLanguage } from '../utils/LanguageContext';
 
+// Pie de página general que muestra el logo de la marca, derechos de autor y selector de idioma.
 const Footer = () => {
   const { idioma, cambiarIdioma, t } = useLanguage();
 

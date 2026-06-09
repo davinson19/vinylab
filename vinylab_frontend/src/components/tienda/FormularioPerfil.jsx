@@ -1,5 +1,6 @@
 import { useLanguage } from '../../utils/LanguageContext';
 
+// Formulario para que el cliente pueda ver y cambiar sus datos personales como el nombre, correo, dirección y contraseña.
 const FormularioPerfil = ({
   profileData,
   savingProfile,

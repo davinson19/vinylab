@@ -2,6 +2,7 @@ import { useLanguage } from '../../utils/LanguageContext';
 
 const FALLBACK_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="10" fill="%231e1e2e"/><circle cx="50" cy="50" r="40" fill="%230f0f15" stroke="%23313244" stroke-width="2"/><circle cx="50" cy="50" r="30" fill="none" stroke="%2345475a" stroke-dasharray="8,6" stroke-width="1"/><circle cx="50" cy="50" r="20" fill="none" stroke="%2345475a" stroke-dasharray="6,4" stroke-width="1"/><circle cx="50" cy="50" r="12" fill="%23cba6f7"/><circle cx="50" cy="50" r="4" fill="%230f0f15"/></svg>`;
 
+// Normaliza el estado del pedido
 const formatStatus = (status, t) => {
   const normalized = status ? status.toLowerCase() : '';
   if (normalized === 'pendiente_envio' || normalized === 'pendiente de envío' || normalized === 'pagado') {
@@ -16,6 +17,7 @@ const formatStatus = (status, t) => {
   return status;
 };
 
+// Historial de compras del cliente que lista sus pedidos anteriores, importes y el estado del envío
 const HistorialPedidos = ({ orders, loadingOrders, setActiveView }) => {
   const { idioma, t } = useLanguage();
 

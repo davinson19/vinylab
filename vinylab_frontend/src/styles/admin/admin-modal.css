@@ -1,3 +1,4 @@
+/* Estilos para los modales de agregar/editar en la vista de admin */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -76,38 +77,6 @@
 .light-mode .image-input-container {
   background: rgba(255, 255, 255, 0.7);
   border-color: rgba(204, 164, 4, 0.2);
-}
-
-.image-input-modes {
-  display: flex;
-  gap: 0.5rem;
-  border-bottom: 1px solid var(--surface-border);
-  padding-bottom: 0.5rem;
-}
-
-.image-mode-btn {
-  flex: 1;
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-muted);
-  padding: 0.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.image-mode-btn:hover {
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.image-mode-btn.active {
-  background: rgba(204, 164, 4, 0.15);
-  color: var(--primary);
-  border-color: rgba(204, 164, 4, 0.3);
 }
 
 .image-dropzone {

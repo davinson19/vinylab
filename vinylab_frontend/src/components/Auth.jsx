@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../utils/LanguageContext';
+import { fetchApi } from '../utils/api';
 
+// Pantalla de acceso y registro para que los usuarios entren a la aplicación
 const Auth = ({ toggleTheme, isDarkMode, setToken }) => {
   const navigate = useNavigate();
   const { idioma, cambiarIdioma, t } = useLanguage();
@@ -10,6 +12,7 @@ const Auth = ({ toggleTheme, isDarkMode, setToken }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Agrega una clase especial al fondo de la pantalla al entrar y la quita al salir
   useEffect(() => {
     document.body.classList.add('auth-page');
     return () => {
@@ -17,14 +20,16 @@ const Auth = ({ toggleTheme, isDarkMode, setToken }) => {
     };
   }, []);
 
+  // Guarda los datos que el usuario va escribiendo en el formulario
   const [formData, setFormData] = useState({
     email: '',
     contrasena: '',
     nombre: '',
     direccion: '',
-    rolId: 2, // Default to client
+    rolId: 2,
   });
 
+  // Guarda los cambios en los campos de texto a medida que el usuario escribe
   const manejarCambio = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -33,6 +38,7 @@ const Auth = ({ toggleTheme, isDarkMode, setToken }) => {
     }));
   };
 
+  // Envía los datos de acceso o registro al servidor y guarda la sesión si los datos son correctos
   const manejarEnvio = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -40,8 +46,6 @@ const Auth = ({ toggleTheme, isDarkMode, setToken }) => {
     setSuccess('');
 
     const endpoint = isLogin ? '/auth/login' : '/auth/register';
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    const url = `${baseUrl}${endpoint}`;
 
     try {
       const payload = isLogin
@@ -54,19 +58,10 @@ const Auth = ({ toggleTheme, isDarkMode, setToken }) => {
           rolId: formData.rolId,
         };
 
-      const response = await fetch(url, {
+      const data = await fetchApi(endpoint, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(payload),
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Ocurrió un error en la solicitud');
-      }
 
       if (isLogin) {
         setSuccess(t('exitoLogin'));
@@ -78,7 +73,6 @@ const Auth = ({ toggleTheme, isDarkMode, setToken }) => {
           if (payload.rolName === 'Admin') {
             navigate('/admin');
           } else {
-            // Navigate to catalog for client
             navigate('/catalogo');
           }
         } catch (e) {
@@ -86,8 +80,7 @@ const Auth = ({ toggleTheme, isDarkMode, setToken }) => {
         }
       } else {
         setSuccess(t('exitoRegistro'));
-        setIsLogin(true); // Switch to login after successful registration
-        // Reset specific fields but keep email
+        setIsLogin(true);
         setFormData((prev) => ({ ...prev, contrasena: '', nombre: '', direccion: '' }));
       }
     } catch (err) {
@@ -97,6 +90,7 @@ const Auth = ({ toggleTheme, isDarkMode, setToken }) => {
     }
   };
 
+  // Cambia el formulario de login a registro y viceversa
   const alternarModo = () => {
     setIsLogin(!isLogin);
     setError('');

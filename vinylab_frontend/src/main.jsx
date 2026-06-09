@@ -6,6 +6,7 @@ import './index.css'
 import './admin.css'
 import App from './App.jsx'
 
+// Punto de entrada de la aplicación que carga React y dibuja el componente principal dentro del HTML, configurando el soporte para idiomas y navegación
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>

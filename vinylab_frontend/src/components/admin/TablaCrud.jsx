@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { fetchApi } from '../utils/api';
-import TablaDatosCrud from './comunes/TablaDatosCrud';
-import ModalCrud from './comunes/ModalCrud';
+import { fetchApi } from '../../utils/api';
+import TablaDatosCrud from './TablaDatosCrud';
+import ModalCrud from './ModalCrud';
 
+// Componente de tabla inteligente que permite ver, crear, editar y eliminar datos del servidor
 const TablaCrud = ({
   endpoint,
   columns,
@@ -19,6 +20,7 @@ const TablaCrud = ({
   
   const [expandedRows, setExpandedRows] = useState({});
 
+  // Muestra u oculta los detalles de una fila específica
   const alternarExpansionFila = (id) => {
     setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
   };
@@ -28,6 +30,7 @@ const TablaCrud = ({
   const [formData, setFormData] = useState({});
   const [selectOptions, setSelectOptions] = useState({});
 
+  // Carga toda la lista de datos
   const cargarDatos = useCallback(async () => {
     setLoading(true);
     try {
@@ -41,11 +44,11 @@ const TablaCrud = ({
     }
   }, [endpoint]);
 
+  // Se conecta al servidor en segundo plano para escuchar cambios en tiempo real
   useEffect(() => {
     let active = true;
     
     const inicializar = async () => {
-      // Defer state update to avoid synchronous setState inside useEffect warning
       await Promise.resolve();
       if (active) {
         cargarDatos();
@@ -93,6 +96,7 @@ const TablaCrud = ({
   }, [endpoint, cargarDatos]);
 
   const isFirstMount = useRef(true);
+  // Recarga los datos cuando se dispara una alerta de cambio desde otro componente
   useEffect(() => {
     if (isFirstMount.current) {
       isFirstMount.current = false;
@@ -101,6 +105,7 @@ const TablaCrud = ({
     cargarDatos();
   }, [refreshTrigger, cargarDatos]);
 
+  // Busca y descarga las opciones para los campos de selección de categorías o artistas 
   useEffect(() => {
     const fetchOptions = async () => {
       const optionsData = {};
@@ -123,6 +128,7 @@ const TablaCrud = ({
     fetchOptions();
   }, [columns]);
 
+  // Modal para crear un elemento nuevo o editar uno ya existente cargando sus datos
   const abrirModal = (item = null) => {
     if (item) {
       setEditingId(item.id);
@@ -143,12 +149,14 @@ const TablaCrud = ({
     setIsModalOpen(true);
   };
 
+  // Cierra la ventana del formulario y limpia el contenido temporal
   const cerrarModal = () => {
     setIsModalOpen(false);
     setEditingId(null);
     setFormData({});
   };
 
+  // Actualiza los valores guardados del formulario cuando el usuario escribe en un campo
   const cambioInput = (e) => {
     const { name, value, type } = e.target;
     let parsedValue = value;
@@ -165,6 +173,7 @@ const TablaCrud = ({
     setFormData(prev => ({ ...prev, [name]: parsedValue }));
   };
 
+  // Guarda los datos en el servidor, validando primero que los números no sean menores a cero
   const enviarFormulario = async (e) => {
     e.preventDefault();
 
@@ -209,6 +218,7 @@ const TablaCrud = ({
     }
   };
 
+  // Borra un registro pidiendo confirmación al usuario y advirtiendo si afectará a otros datos en cascada
   const eliminarRegistro = async (id) => {
     let mensajeConfirmacion = '¿Estás seguro de que deseas eliminar este registro?';
 

@@ -6,13 +6,17 @@ import RutaProtegida from './components/RutaProtegida';
 import Tienda from './components/Tienda';
 import './store.css';
 
+
 function App() {
+  // Guarda si la pantalla está en modo noche o día
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('theme') === 'dark';
   });
 
+  // Guarda el token del usuario para saber si está conectado
   const [token, setToken] = useState(localStorage.getItem('token'));
 
+  // Vigila si la sesión cambia en el navegador
   useEffect(() => {
     const handleStorageChange = () => {
       setToken(localStorage.getItem('token'));
@@ -32,6 +36,7 @@ function App() {
     };
   }, [token]);
 
+  // Cambia al modo noche
   useEffect(() => {
     if (isDarkMode) {
       document.body.classList.remove('light-mode');
@@ -42,8 +47,10 @@ function App() {
     }
   }, [isDarkMode]);
 
+  // Alterna entre el modo noche y el modo día
   const alternarTema = () => setIsDarkMode(!isDarkMode);
 
+  // Decide qué pantalla inicial mostrar: el formulario de acceso, la tienda, o el panel de administrador
   const renderizarInicio = () => {
     if (!token) {
       return <Auth toggleTheme={alternarTema} isDarkMode={isDarkMode} setToken={setToken} />;
@@ -80,3 +87,4 @@ function App() {
 }
 
 export default App;
+

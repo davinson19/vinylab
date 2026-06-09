@@ -1,5 +1,6 @@
 import SubirImagen from './SubirImagen';
 
+// Modal con formulario para añadir o editar registros de la base de datos
 const ModalCrud = ({
   isOpen,
   onClose,
@@ -15,6 +16,7 @@ const ModalCrud = ({
 }) => {
   if (!isOpen) return null;
 
+  // Decide si un campo de texto es obligatorio rellenar o no para poder guardar
   const esRequerido = (col) => {
     if (col.key === 'id') return false;
     if (col.required === false) return false;
@@ -34,7 +36,7 @@ const ModalCrud = ({
         <div className="modal-body">
           <form id="crud-form" onSubmit={onSubmit}>
             {columns.map(col => {
-              if (col.key === 'id' && !editingId) return null; // usually auto-increment
+              if (col.key === 'id' && !editingId) return null;
               if (col.hideInForm) return null;
               
               if (col.type === 'image') {

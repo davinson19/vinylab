@@ -1,5 +1,6 @@
 import { Fragment } from 'react';
 
+// Tabla visual que muestra las columnas de datos y los botones de acción para editar o eliminar cada fila
 const TablaDatosCrud = ({
   columns,
   data,

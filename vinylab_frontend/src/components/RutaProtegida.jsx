@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 
+// Controla que solo los usuarios conectados y con los permisos adecuados puedan ver ciertas secciones
 const RutaProtegida = ({ children, requiereAdmin = true }) => {
   const token = localStorage.getItem('token');
   

@@ -1,5 +1,6 @@
 import { useLanguage } from '../../utils/LanguageContext';
 
+// Menú lateral desplegable para pantallas de móvil que facilita la navegación y el cierre de sesión en pantallas pequeñas.
 const MenuMovil = ({
   isOpen,
   setIsOpen,
@@ -74,7 +75,7 @@ const MenuMovil = ({
 
             <div className="mobile-menu-divider"></div>
 
-            {/* Theme Toggle row inside mobile menu */}
+            {/* Botón para cambiar el modo día/noche */}
             <div className="mobile-theme-row">
               <span>{idioma === 'es' ? `Modo ${isDarkMode ? 'Día' : 'Noche'}` : `Mode ${isDarkMode ? 'Day' : 'Night'}`}</span>
               <button

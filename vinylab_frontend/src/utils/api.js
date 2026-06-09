@@ -1,3 +1,4 @@
+// Función auxiliar para realizar consultas de forma sencilla al servidor web, enviando automáticamente la sesión del usuario si está iniciada
 export const fetchApi = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token');
   

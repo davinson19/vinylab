@@ -1,6 +1,4 @@
-/* ==========================================================================
-   Vinyl Details Modal Styles & Micro-Animations
-   ========================================================================== */
+/* Estilos visuales y efectos para la ficha del vinilo */
 .detail-modal-overlay {
   position: fixed;
   top: 0;
@@ -320,7 +318,8 @@
   box-shadow: 0 8px 20px var(--primary-shadow);
 }
 
-.btn-add-cart-detail:disabled, .btn-buy-now-detail:disabled {
+.btn-add-cart-detail:disabled,
+.btn-buy-now-detail:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

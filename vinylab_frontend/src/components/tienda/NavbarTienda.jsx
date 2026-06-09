@@ -1,6 +1,7 @@
 import logo from '../../assets/logo.png';
 import { useLanguage } from '../../utils/LanguageContext';
 
+// Barra superior de navegación para la tienda que contiene acceso al carrito, perfil de usuario y cambio de modo día/noche
 const NavbarTienda = ({
   activeView,
   setActiveView,
@@ -32,7 +33,6 @@ const NavbarTienda = ({
       </button>
 
       <div className="store-nav-actions">
-        {/* Cart Button */}
         <button
           type="button"
           className="nav-btn nav-btn-relative"
@@ -49,9 +49,7 @@ const NavbarTienda = ({
           )}
         </button>
 
-        {/* Desktop Only Actions */}
         <div className="desktop-nav-actions">
-          {/* Theme Toggler */}
           <button
             type="button"
             className="nav-btn"
@@ -76,8 +74,8 @@ const NavbarTienda = ({
               </svg>
             )}
           </button>
-
-          {/* User Icon & Dropdown */}
+          
+          {/* Icono de usuario y desplegable */}
           <div className="user-dropdown-container" ref={dropdownRef}>
             <button 
               type="button"
@@ -131,7 +129,7 @@ const NavbarTienda = ({
           </div>
         </div>
 
-        {/* Hamburger Menu Button (Mobile) */}
+        {/* Botón de menú hamburguesa para móviles */}
         <button
           type="button"
           className={`nav-btn hamburger-btn ${isMobileMenuOpen ? 'active' : ''}`}

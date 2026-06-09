@@ -1,3 +1,4 @@
+/* Hoja de estilos principal que agrupa las variables de color, estilos base y de acceso */
 @import './styles/variables.css';
 @import './styles/base.css';
 @import './styles/auth.css';
