@@ -57,7 +57,7 @@ const TablaCrud = ({
     
     inicializar();
 
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const baseUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin);
     const eventSource = new EventSource(`${baseUrl}/realtime/sse`);
 
     eventSource.onmessage = (event) => {
