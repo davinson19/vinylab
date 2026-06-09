@@ -19,9 +19,7 @@ services:
       start_period: 5s
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: davidhc19/vinylab:latest
     container_name: vinylab-app
     restart: always
     depends_on:
@@ -32,7 +30,7 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/vinylab?schema=public
       JWT_SECRET: vinylab_secret_key_super_secure_2026
     ports:
-      - "5173:80"
+      - "80:80"
 
 volumes:
   postgres_data:
