@@ -1,9 +1,10 @@
-name: Construir y subir imágenes Docker
+name: Construir y subir imágenes a Docker Hub
 
 on:
   push:
     branches:
       - main
+      - master
 
 jobs:
   build-and-push:
@@ -25,13 +26,13 @@ jobs:
       - name: Backend
         uses: docker/build-push-action@v5
         with:
-          context: ./backend
+          context: ./vinylab_backend
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/backend:latest
 
       - name: Frontend
         uses: docker/build-push-action@v5
         with:
-          context: ./frontend
+          context: ./vinylab_frontend
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/frontend:latest
