@@ -9,10 +9,9 @@ Trabajo fin de grado de David Hernández Carmona para 2º de Desarrollo de Aplic
 
 ### Diagrama Entidad-Relación
 
-
 Diagrama de la base de datos diseñado con **Mermaid**.
 
-![ER](Diagrama_entidad_relación.png "Diagrama Entidad-Relación")
+![ER](Entidad-relacion.png "Diagrama Entidad-Relación")
 
 ---
 
