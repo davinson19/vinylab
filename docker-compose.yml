@@ -17,12 +17,9 @@ services:
       timeout: 5s
       retries: 5
       start_period: 5s
-
   app:
     image: davidhc19/vinylab:latest
     container_name: vinylab-app
-
-
     restart: always
     depends_on:
       db:
@@ -31,9 +28,21 @@ services:
       PORT: 3000
       DATABASE_URL: postgresql://postgres:postgres@db:5432/vinylab?schema=public
       JWT_SECRET: vinylab_secret_key_super_secure_2026
-    ports:
-      - "80:3000"
 
+  https-portal:
+    image: steveltn/https-portal:1
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      #DOMAINS: "${DOMAIN} -> http://app:3000 #production"
+      DOMAINS: 'localhost -> http://app:3000 #local'      
+    volumes:
+      - ssl_certs_data:/var/lib/https-portal
+    depends_on:
+      - app
+    restart: always
 
 volumes:
   postgres_data:
+  ssl_certs_data:
