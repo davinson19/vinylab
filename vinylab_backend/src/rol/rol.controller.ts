@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { RolService } from './rol.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateRolDto } from './dto/create-rol.dto';
@@ -25,7 +34,10 @@ export class RolController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateRolDto: UpdateRolDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateRolDto: UpdateRolDto,
+  ) {
     return this.rolService.update(id, updateRolDto);
   }
 

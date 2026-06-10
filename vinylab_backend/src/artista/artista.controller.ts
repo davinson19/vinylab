@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { ArtistaService } from './artista.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateArtistaDto } from './dto/create-artista.dto';
@@ -27,7 +36,10 @@ export class ArtistaController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateArtistaDto: UpdateArtistaDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateArtistaDto: UpdateArtistaDto,
+  ) {
     return this.artistaService.update(id, updateArtistaDto);
   }
 

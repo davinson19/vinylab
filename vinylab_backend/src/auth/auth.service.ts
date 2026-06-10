@@ -9,7 +9,7 @@ import { CreateUsuarioDto } from '../usuario/dto/create-usuario.dto';
 export class AuthService {
   constructor(
     private usuarioService: UsuarioService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
   ) {}
 
   async login(loginDto: LoginDto) {
@@ -18,16 +18,19 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    const isPasswordValid = await bcrypt.compare(loginDto.contrasena, usuario.contrasena);
+    const isPasswordValid = await bcrypt.compare(
+      loginDto.contrasena,
+      usuario.contrasena,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    const payload = { 
-      email: usuario.email, 
-      sub: usuario.id, 
+    const payload = {
+      email: usuario.email,
+      sub: usuario.id,
       rolId: usuario.rolId,
-      rolName: usuario.rol?.nombre 
+      rolName: usuario.rol?.nombre,
     };
     return {
       access_token: this.jwtService.sign(payload),

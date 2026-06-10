@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { ViniloService } from './vinilo.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateViniloDto } from './dto/create-vinilo.dto';
@@ -27,7 +36,10 @@ export class ViniloController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateViniloDto: UpdateViniloDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateViniloDto: UpdateViniloDto,
+  ) {
     return this.viniloService.update(id, updateViniloDto);
   }
 

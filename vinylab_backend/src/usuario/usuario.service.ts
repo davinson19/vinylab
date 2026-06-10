@@ -9,13 +9,16 @@ import { JwtService } from '@nestjs/jwt';
 export class UsuarioService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
   ) {}
 
   async create(createUsuarioDto: CreateUsuarioDto) {
     const saltOrRounds = 10;
-    const hashedPassword = await bcrypt.hash(createUsuarioDto.contrasena, saltOrRounds);
-    
+    const hashedPassword = await bcrypt.hash(
+      createUsuarioDto.contrasena,
+      saltOrRounds,
+    );
+
     return this.prisma.usuario.create({
       data: {
         ...createUsuarioDto,
@@ -49,10 +52,12 @@ export class UsuarioService {
 
     if (updateUsuarioDto.email && updateUsuarioDto.email !== existing.email) {
       const duplicate = await this.prisma.usuario.findUnique({
-        where: { email: updateUsuarioDto.email }
+        where: { email: updateUsuarioDto.email },
       });
       if (duplicate) {
-        throw new BadRequestException('El correo electrónico ya está registrado por otro usuario');
+        throw new BadRequestException(
+          'El correo electrónico ya está registrado por otro usuario',
+        );
       }
     }
 
@@ -62,26 +67,29 @@ export class UsuarioService {
         delete updateUsuarioDto.contrasena;
       } else {
         const saltOrRounds = 10;
-        updateUsuarioDto.contrasena = await bcrypt.hash(updateUsuarioDto.contrasena, saltOrRounds);
+        updateUsuarioDto.contrasena = await bcrypt.hash(
+          updateUsuarioDto.contrasena,
+          saltOrRounds,
+        );
       }
     }
-    
+
     const updatedUser = await this.prisma.usuario.update({
       where: { id },
       data: updateUsuarioDto,
-      include: { rol: true }
+      include: { rol: true },
     });
 
     const payload = {
       email: updatedUser.email,
       sub: updatedUser.id,
       rolId: updatedUser.rolId,
-      rolName: updatedUser.rol?.nombre
+      rolName: updatedUser.rol?.nombre,
     };
 
     return {
       user: updatedUser,
-      access_token: this.jwtService.sign(payload)
+      access_token: this.jwtService.sign(payload),
     };
   }
 

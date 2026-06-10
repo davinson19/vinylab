@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Req, ForbiddenException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+  Req,
+  ForbiddenException,
+} from '@nestjs/common';
 import { UsuarioService } from './usuario.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
@@ -30,11 +41,18 @@ export class UsuarioController {
 
   @Roles('Admin', 'Cliente')
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateUsuarioDto: UpdateUsuarioDto, @Req() req: any) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUsuarioDto: UpdateUsuarioDto,
+    @Req() req: any,
+  ) {
     if (req.user.rolName === 'Cliente' && req.user.userId !== id) {
       throw new ForbiddenException('No puedes modificar un perfil ajeno');
     }
-    if (req.user.rolName === 'Cliente' && updateUsuarioDto.rolId !== undefined) {
+    if (
+      req.user.rolName === 'Cliente' &&
+      updateUsuarioDto.rolId !== undefined
+    ) {
       throw new ForbiddenException('No puedes modificar tu propio rol');
     }
     return this.usuarioService.update(id, updateUsuarioDto);

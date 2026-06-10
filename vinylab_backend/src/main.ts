@@ -8,7 +8,7 @@ import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+
   // Aumentar el límite de tamaño para poder recibir imágenes en base64
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ limit: '10mb', extended: true }));
@@ -16,7 +16,7 @@ async function bootstrap() {
   // Habilitar validaciones globales para los DTOs
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  app.enableCors(); // Permitir peticiones desde el frontend (puerto 5173 por defecto en Vite)
+  app.enableCors(); // Permitir peticiones desde el frontend
 
   // Servir archivos estáticos del frontend
   let publicPath = path.join(__dirname, '..', '..', 'public');
@@ -29,8 +29,16 @@ async function bootstrap() {
 
     // Redireccionar rutas que no son de API ni archivos estáticos al index.html del frontend (SPA)
     app.use((req, res, next) => {
-      const apiRoutes = ['/usuario', '/vinilo', '/artista', '/pedido', '/auth', '/rol', '/categoria'];
-      const isApi = apiRoutes.some(route => req.path.startsWith(route));
+      const apiRoutes = [
+        '/usuario',
+        '/vinilo',
+        '/artista',
+        '/pedido',
+        '/auth',
+        '/rol',
+        '/categoria',
+      ];
+      const isApi = apiRoutes.some((route) => req.path.startsWith(route));
       if (isApi || req.path.includes('.')) {
         return next();
       }
@@ -41,4 +49,3 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
-

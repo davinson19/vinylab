@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Req, ForbiddenException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+  Req,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PedidoService } from './pedido.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
@@ -30,14 +41,20 @@ export class PedidoController {
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
     const pedido = await this.pedidoService.findOne(id);
-    if (req.user.rolName === 'Cliente' && pedido?.usuarioId !== req.user.userId) {
+    if (
+      req.user.rolName === 'Cliente' &&
+      pedido?.usuarioId !== req.user.userId
+    ) {
       throw new ForbiddenException('No tienes permiso para ver este pedido');
     }
     return pedido;
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updatePedidoDto: UpdatePedidoDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updatePedidoDto: UpdatePedidoDto,
+  ) {
     return this.pedidoService.update(id, updatePedidoDto);
   }
 
