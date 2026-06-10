@@ -22,7 +22,6 @@ RUN npm run build
 
 # --- Stage 3: Production ---
 FROM node:20-alpine
-RUN apk add --no-cache nginx openssl
 
 WORKDIR /app
 
@@ -38,15 +37,11 @@ RUN npx prisma generate
 # Copy compiled backend application
 COPY --from=backend-build /app/dist ./dist
 
-# Copy compiled frontend static files to Nginx web root
-COPY --from=frontend-build /app/dist /var/www/html
+# Copy compiled frontend static files to backend public folder
+COPY --from=frontend-build /app/dist ./public
 
-# Copy configuration files
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY entrypoint.sh /entrypoint.sh
-RUN apk add --no-cache dos2unix && dos2unix /entrypoint.sh && chmod +x /entrypoint.sh
+# Expose port 3000 (NestJS port)
+EXPOSE 3000
 
-# Expose port 80 (Nginx port)
-EXPOSE 80
+CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed && node dist/src/main.js"]
 
-ENTRYPOINT ["/entrypoint.sh"]
