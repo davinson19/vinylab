@@ -19,9 +19,9 @@ services:
       start_period: 5s
 
   app:
-    build: .
     image: davidhc19/vinylab:latest
     container_name: vinylab-app
+
 
     restart: always
     depends_on:
